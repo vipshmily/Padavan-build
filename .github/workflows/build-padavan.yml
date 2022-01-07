@@ -4,44 +4,28 @@ name: Build Padavan
 on: 
   release:
     types: [published]
-#  push:
-#    tags:
-#    - 'v*'
+  push:
+    tags:
+    - 'v*'
   #  branches: 
   #    - master
-  #schedule:
-    #- cron: 0 17 * * 4
-  #watch:
-    #types: [started]
-  workflow_dispatch:
+#  schedule:
+#    - cron: 0 8 * * 5
+  watch:
+    types: [started]
+  #workflow_dispatch:
 env:                      # 环境变量
   MHZ: 1100               # CPU超频频率 必须为20的倍数，开启超频需开启95行超频开关
-  images_dir: /opt/images
+  TNAME: MI-R4A           # 配置文件名  https://github.com/hanwckf/rt-n56u/tree/master/trunk/configs/templates
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-Latest
+    if: github.event.repository.owner.id == github.event.sender.id
 
     steps:
     - name: Checkout
       uses: actions/checkout@master
-      
-    - name: 生成版本号
-      run: |
-        whoami
-        id
-        echo 接收到的输入参数:
-        echo "${{ github.event.inputs.TNAME }}"
-        echo "${{ github.event.inputs.release }}"
-        echo 
-        echo 当前目录:$(pwd)
-        # 版本号
-        VERSION=$(TZ='Asia/Shanghai' date +%Y%m%d.%H%M)
-        echo "VERSION=$VERSION" >> $GITHUB_ENV
-        # $GITHUB_ENV变量必须要在下一个流程才生效
-        echo "DIR=/opt/rt-n56u" >> $GITHUB_ENV
-        echo "TNAME=$TNAME" >> $GITHUB_ENV
-        ip addr
     - name: Initialization environment
       env:
         DEBIAN_FRONTEND: noninteractive
@@ -52,8 +36,8 @@ jobs:
         pkg-config zlib1g-dev libgmp3-dev libmpc-dev libmpfr-dev libncurses5-dev libltdl-dev wget
     - name: Clone source code
       run: |
-        git clone --depth=1 https://github.com/vipshmily/rt-n56u2.git ${{ env.DIR }}
-        cd ${{ env.DIR }}/toolchain-mipsel
+        git clone --depth=1 https://github.com/vipshmily/rt-n56u2.git /opt/rt-n56u
+        cd /opt/rt-n56u/toolchain-mipsel
         sh dl_toolchain.sh
         mkdir -p /opt/images/
     - id: vars
@@ -64,129 +48,116 @@ jobs:
       with:
         go-version: ${{ steps.vars.outputs.go_version }}
     - name: Build Firmware
-      env:
-        TNAME: "PSG1218"
       run: |
-        cwd=`pwd`
-        CONFIG_TOOLCHAIN_DIR=${cwd//\//\\\/}\\/toolchain-mipsel
-        cd ${{ env.DIR }}/trunk
+        cd /opt/rt-n56u/trunk
         echo "CPU超频到$MHZ"mhz
         echo "修改CPU频率"
         clock=`echo "obase=16 ; ibase=10 ; (((($MHZ/20)-1)*16+2))" | bc`
         echo "16进制$clock"
-        sed -i "554,555s:0xff:0x7ff:g" ${{ env.DIR }}/trunk/linux-3.4.x/arch/mips/rt2880/init.c
-        sed -i "554,556s:0xc2:0x$clock:g" ${{ env.DIR }}/trunk/linux-3.4.x/arch/mips/rt2880/init.c
-        for m in $TNAME;
-        do
-        if [ ! -f configs/templates/$m.config ] ; then
-        echo "configs/templates/$m.config not found "
+        sed -i "554,555s:0xff:0x7ff:g" /opt/rt-n56u/trunk/linux-3.4.x/arch/mips/rt2880/init.c
+        sed -i "554,556s:0xc2:0x$clock:g" /opt/rt-n56u/trunk/linux-3.4.x/arch/mips/rt2880/init.c
+        if [ ! -f configs/templates/$TNAME.config ] ; then
+        echo "configs/templates/$TNAME.config not found "
         exit 1
         fi
-        cp -f configs/templates/$m.config .config
+        cp -f configs/templates/$TNAME.config .config
+        sed -i 's/CONFIG_FIRMWARE_INCLUDE_OPENSSL_EXE=n/CONFIG_FIRMWARE_INCLUDE_OPENSSL_EXE=y/g' configs/templates/$TNAME.config
         ############################################################################################
         #因不同型号配置功能不一样，所以先把配置项删除，如果你自己要添加其他的，也要写上删除这一条，切记！！！
         ############################################################################################
-        sed -i '/CONFIG_FIRMWARE_INCLUDE_MENTOHUST/d' .config #删除配置项MENTOHUST
-        sed -i '/CONFIG_FIRMWARE_INCLUDE_SOFTETHERVPN_SERVER/d' .config #删除配置项SOFTETHERVPN
-        sed -i '/CONFIG_FIRMWARE_INCLUDE_SOFTETHERVPN_CLIENT/d' .config #删除配置项SOFTETHERVPN
-        sed -i '/CONFIG_FIRMWARE_INCLUDE_SOFTETHERVPN_CMD/d' .config #删除配置项SOFTETHERVPN
-        sed -i '/CONFIG_FIRMWARE_INCLUDE_SCUTCLIENT/d' .config #删除配置项SCUTCLIENT
-        sed -i '/CONFIG_FIRMWARE_INCLUDE_SHADOWSOCKS/d' .config #删除配置项SS plus+
-        sed -i '/CONFIG_FIRMWARE_INCLUDE_SSSERVER/d' .config #删除配置项SS server
-        sed -i '/CONFIG_FIRMWARE_INCLUDE_DNSFORWARDER/d' .config #删除配置项DNSFORWARDER
-        sed -i '/CONFIG_FIRMWARE_INCLUDE_ADBYBY/d' .config #删除配置项adbyby plus+
-        sed -i '/CONFIG_FIRMWARE_INCLUDE_FRPC/d' .config #删除配置项FRPC
-        sed -i '/CONFIG_FIRMWARE_INCLUDE_FRPS/d' .config #删除配置项FRPS
-        sed -i '/CONFIG_FIRMWARE_INCLUDE_TUNSAFE/d' .config #删除配置项TUNSAFE
-        sed -i '/CONFIG_FIRMWARE_INCLUDE_ALIDDNS/d' .config #删除配置项阿里DDNS
-        sed -i '/CONFIG_FIRMWARE_INCLUDE_SMARTDNS/d' .config #删除配置项SMARTDNS
-        sed -i '/CONFIG_FIRMWARE_INCLUDE_SRELAY/d' .config #删除配置项SRELAY
-        sed -i '/CONFIG_FIRMWARE_INCLUDE_NPC/d' .config #删除配置项NPC
-        sed -i '/CONFIG_FIRMWARE_INCLUDE_KUMASOCKS/d' .config #删除配置项KUMASOCKS
-        sed -i '/CONFIG_FIRMWARE_CPU_900MHZ/d' .config #删除配置项超频900MHz
+        sed -i '/CONFIG_FIRMWARE_INCLUDE_MENTOHUST/d' configs/templates/$TNAME.config #删除配置项MENTOHUST
+        sed -i '/CONFIG_FIRMWARE_INCLUDE_SCUTCLIENT/d' configs/templates/$TNAME.config #删除配置项SCUTCLIENT
+        sed -i '/CONFIG_FIRMWARE_INCLUDE_SHADOWSOCKS/d' configs/templates/$TNAME.config #删除配置项SS plus+
+        sed -i '/CONFIG_FIRMWARE_INCLUDE_SSSERVER/d' configs/templates/$TNAME.config #删除配置项SS server
+        sed -i '/CONFIG_FIRMWARE_INCLUDE_DNSFORWARDER/d' configs/templates/$TNAME.config #删除配置项DNSFORWARDER
+        sed -i '/CONFIG_FIRMWARE_INCLUDE_ADBYBY/d' configs/templates/$TNAME.config #删除配置项adbyby plus+
+        sed -i '/CONFIG_FIRMWARE_INCLUDE_FRPC/d' configs/templates/$TNAME.config #删除配置项adbyby plus+
+        sed -i '/CONFIG_FIRMWARE_INCLUDE_FRPS/d' configs/templates/$TNAME.config #删除配置项adbyby plus+
+        sed -i '/CONFIG_FIRMWARE_INCLUDE_TUNSAFE/d' configs/templates/$TNAME.config #删除配置项adbyby plus+
+        sed -i '/CONFIG_FIRMWARE_INCLUDE_ALIDDNS/d' configs/templates/$TNAME.config #删除配置项阿里DDNS
+        sed -i '/CONFIG_FIRMWARE_INCLUDE_SMARTDNS/d' configs/templates/$TNAME.config
+        sed -i '/CONFIG_FIRMWARE_INCLUDE_SRELAY/d' configs/templates/$TNAME.config
+        sed -i '/CONFIG_FIRMWARE_INCLUDE_NPC/d' configs/templates/$TNAME.config
+        sed -i '/CONFIG_FIRMWARE_INCLUDE_KUMASOCKS/d' configs/templates/$TNAME.config
+        sed -i '/CONFIG_FIRMWARE_INCLUDE_IPT2SOCKS/d' configs/templates/$TNAME.config
+        sed -i '/CONFIG_FIRMWARE_INCLUDE_MICROSOCKS/d' configs/templates/$TNAME.config
+        sed -i '/CONFIG_FIRMWARE_CPU_900MHZ/d' configs/templates/$TNAME.config #删除配置项超频900MHz
+        sed -i 's/CONFIG_FIRMWARE_INCLUDE_OPENSSL_EXE=n/CONFIG_FIRMWARE_INCLUDE_OPENSSL_EXE=y/g' configs/templates/$TNAME.config
         ######################################################################
         #以下选项是定义你需要的功能（y=集成,n=忽略），重新写入到.config文件
         ######################################################################
-        echo "CONFIG_FIRMWARE_INCLUDE_MENTOHUST=n" >> .config #MENTOHUST
-        echo "CONFIG_FIRMWARE_INCLUDE_SCUTCLIENT=n" >> .config #SCUTCLIENT
-        echo "CONFIG_FIRMWARE_INCLUDE_SSSERVER=n" >> .config #SS server
-        echo "CONFIG_FIRMWARE_INCLUDE_DNSFORWARDER=n" >> .config #DNSFORWARDER
-        echo "CONFIG_FIRMWARE_INCLUDE_TUNSAFE=n" >> .config #TUNSAFE
-        echo "CONFIG_FIRMWARE_INCLUDE_SRELAY=n" >> .config #可以不集成
-        echo "CONFIG_FIRMWARE_CPU_900MHZ=y" >> .config #开启超频，仅MT7621可用
-        ##科学上网## 特别注意，开启科学需要开启159行的shadowsocks，否则全部有关插件都不集成
-        echo "CONFIG_FIRMWARE_INCLUDE_SHADOWSOCKS=y" >> .config #科学上网插件，选择n后全部有关插件都不集成
-        echo "CONFIG_FIRMWARE_INCLUDE_SSOBFS=y" >> .config # simple-obfs混淆插件
-        echo "CONFIG_FIRMWARE_INCLUDE_V2RAY=n" >> .config #集成v2ray执行文件（3.6M左右)，如果不集成，会从网上下载下来执行，不影响正常使用
-        echo "CONFIG_FIRMWARE_INCLUDE_XRAY=n" >> .config #集成xray执行文件（3.6M左右)，如果不集成，会从网上下载下来执行，不影响正常使用
-        echo "CONFIG_FIRMWARE_INCLUDE_TROJAN=n" >> .config #集成trojan执行文件(1.1M左右)，如果不集成，会从网上下载下来执行，不影响正常使用
-        echo "CONFIG_FIRMWARE_INCLUDE_KUMASOCKS=y" >> .config #socks5服务端
+        echo "CONFIG_FIRMWARE_INCLUDE_MENTOHUST=n" >> configs/templates/$TNAME.config #MENTOHUST
+        echo "CONFIG_FIRMWARE_INCLUDE_SCUTCLIENT=n" >> configs/templates/$TNAME.config #SCUTCLIENT
+        echo "CONFIG_FIRMWARE_INCLUDE_SSSERVER=n" >> configs/templates/$TNAME.config #SS server
+        echo "CONFIG_FIRMWARE_INCLUDE_DNSFORWARDER=n" >> configs/templates/$TNAME.config #DNSFORWARDER
+        echo "CONFIG_FIRMWARE_INCLUDE_TUNSAFE=n" >> configs/templates/$TNAME.config #TUNSAFE
+        echo "CONFIG_FIRMWARE_INCLUDE_SRELAY=n" >> configs/templates/$TNAME.config #可以不集成
+        echo "CONFIG_FIRMWARE_CPU_900MHZ=y" >> configs/templates/$TNAME.config #开启超频，仅MT7621可用
+        
+        ##科学上网## 特别注意，开启科学需要开启98行的shadowsocks，否则全部有关插件都不集成
+        echo "CONFIG_FIRMWARE_INCLUDE_SHADOWSOCKS=y" >> configs/templates/$TNAME.config #科学上网插件，选择n后全部有关插件都不集成
+        echo "CONFIG_FIRMWARE_INCLUDE_SSOBFS=y" >> configs/templates/$TNAME.config # simple-obfs混淆插件
+        echo "CONFIG_FIRMWARE_INCLUDE_V2RAY=n" >> configs/templates/$TNAME.config #集成v2ray执行文件（3.8M左右)，如果不集成，会从网上下载下来执行，不影响正常使用
+        echo "CONFIG_FIRMWARE_INCLUDE_XRAY=y" >> configs/templates/$TNAME.config #集成xray执行文件（3.8M左右)，如果不集成，会从网上下载下来执行，不影响正常使用
+        echo "CONFIG_FIRMWARE_INCLUDE_TROJAN=n" >> configs/templates/$TNAME.config #集成trojan执行文件(1.1M左右)，如果不集成，会从网上下载下来执行，不影响正常使用
+        echo "CONFIG_FIRMWARE_INCLUDE_KUMASOCKS=y" >> configs/templates/$TNAME.config #socks5服务端
+        echo "CONFIG_FIRMWARE_INCLUDE_IPT2SOCKS=y" >> configs/templates/$TNAME.config
+        echo "CONFIG_FIRMWARE_INCLUDE_MICROSOCKS=y" >> configs/templates/$TNAME.config
         ##科学上网##
         
         ##广告管理##
-        echo "CONFIG_FIRMWARE_INCLUDE_ADBYBY=n" >> .config #adbyby plus+
-        echo "CONFIG_FIRMWARE_INCLUDE_KOOLPROXY=n" >> .config #KP广告过滤
+        echo "CONFIG_FIRMWARE_INCLUDE_ADBYBY=y" >> configs/templates/$TNAME.config #adbyby plus+
+        echo "CONFIG_FIRMWARE_INCLUDE_KOOLPROXY=n" >> configs/templates/$TNAME.config #KP广告过滤
         ##广告管理##
         
         ##DNS服务##
-        echo "CONFIG_FIRMWARE_INCLUDE_SMARTDNS=y" >> .config #smartdns
-        echo "CONFIG_FIRMWARE_INCLUDE_SMARTDNSBIN=n" >> .config #smartdns二进制文件
-        echo "CONFIG_FIRMWARE_INCLUDE_ADGUARDHOME=n" >> .config #adg DNS去AD
+        echo "CONFIG_FIRMWARE_INCLUDE_SMARTDNS=y" >> configs/templates/$TNAME.config #smartdns
+        echo "CONFIG_FIRMWARE_INCLUDE_SMARTDNSBIN=n" >> configs/templates/$TNAME.config #smartdns二进制文件
+        echo "CONFIG_FIRMWARE_INCLUDE_ADGUARDHOME=n" >> configs/templates/$TNAME.config #adg DNS去AD
         ##DNS服务##
         
         ##文件管理##
-        echo "CONFIG_FIRMWARE_INCLUDE_CADDY=n" >> .config #在线文件管理服务
-        echo "CONFIG_FIRMWARE_INCLUDE_CADDYBIN=n" >> .config #集成caddu执行文件，此文件有13M,请注意固件大小。如果不集成，会从网上下载下来执行，不影响正常使用
+        echo "CONFIG_FIRMWARE_INCLUDE_CADDY=n" >> configs/templates/$TNAME.config #在线文件管理服务
+        echo "CONFIG_FIRMWARE_INCLUDE_CADDYBIN=n" >> configs/templates/$TNAME.config #集成caddu执行文件，此文件有13M,请注意固件大小。如果不集成，会从网上下载下来执行，不影响正常使用
         ##文件管理##
         
         ##音乐解锁##
-        echo "CONFIG_FIRMWARE_INCLUDE_WYY=n" >> .config #网易云解锁
-        echo "CONFIG_FIRMWARE_INCLUDE_WYYBIN=n" >> .config #网易云解锁GO版本执行文件（4M多）注意固件超大小,不集成会自动下载
+        echo "CONFIG_FIRMWARE_INCLUDE_WYY=n" >> configs/templates/$TNAME.config #网易云解锁
+        echo "CONFIG_FIRMWARE_INCLUDE_WYYBIN=n" >> configs/templates/$TNAME.config #网易云解锁GO版本执行文件（4M多）注意固件超大小,不集成会自动下载
         ##音乐解锁##
         
         ##内网穿透服务##
-        echo "CONFIG_FIRMWARE_INCLUDE_ZEROTIER=n" >> .config #zerotier ~1.3M
-        echo "CONFIG_FIRMWARE_INCLUDE_ALIDDNS=n" >> .config #阿里DDNS
-        echo "CONFIG_FIRMWARE_INCLUDE_FRPC=n" >> .config #内网穿透FRPC
-        echo "CONFIG_FIRMWARE_INCLUDE_FRPS=n" >> .config #内网穿透FRPS
-        echo "CONFIG_FIRMWARE_INCLUDE_NPC=n" >> .config #npc
+        echo "CONFIG_FIRMWARE_INCLUDE_ZEROTIER=y" >> configs/templates/$TNAME.config #zerotier ~1.3M
+        echo "CONFIG_FIRMWARE_INCLUDE_ALIDDNS=n" >> configs/templates/$TNAME.config #阿里DDNS
+        echo "CONFIG_FIRMWARE_INCLUDE_FRPC=n" >> configs/templates/$TNAME.config #内网穿透FRPC
+        echo "CONFIG_FIRMWARE_INCLUDE_FRPS=n" >> configs/templates/$TNAME.config #内网穿透FRPS
+        echo "CONFIG_FIRMWARE_INCLUDE_NPC=n" >> configs/templates/$TNAME.config #npc
         ##内网穿透服务##
         
           # 更新v2ray版本
           v2_version=`curl --silent "https://api.github.com/repos/v2fly/v2ray-core/releases/latest" | jq -r '.tag_name | sub("^v";"")'`
-          sed -i "s/V2ray_VERSION := .*/V2ray_VERSION := $v2_version/g" ${{ env.DIR }}/trunk/user/v2ray/Makefile
-          sed -i 's|codeload.github.com/v2ray|codeload.github.com/v2fly|g' ${{ env.DIR }}/trunk/user/v2ray/Makefile
+          sed -i "s/V2ray_VERSION := .*/V2ray_VERSION := $v2_version/g" /opt/rt-n56u/trunk/user/v2ray/Makefile
+          sed -i 's|codeload.github.com/v2ray|codeload.github.com/v2fly|g' /opt/rt-n56u/trunk/user/v2ray/Makefile
           # 更新xray版本
           xray_version=`curl --silent "https://api.github.com/repos/XTLS/Xray-core/releases/latest" | jq -r '.tag_name | sub("^v";"")'`
-          sed -i "s/Xray_VERSION := .*/Xray_VERSION := $xray_version/g" ${{ env.DIR }}/trunk/user/xray/Makefile
-          sed -i 's|codeload.github.com/xray|codeload.github.com/XTLS|g' ${{ env.DIR }}/trunk/user/xray/Makefile
+          sed -i "s/Xray_VERSION := .*/Xray_VERSION := $xray_version/g" /opt/rt-n56u/trunk/user/xray/Makefile
+          sed -i 's|codeload.github.com/xray|codeload.github.com/XTLS|g' /opt/rt-n56u/trunk/user/xray/Makefile
         #########################################################################################
         # 自定义添加其它功能请参考源码configs/templates/目录下的config文件。按照上面的格式添加即可
+        # https://github.com/hanwckf/rt-n56u/blob/master/trunk/configs/templates/
         # 格式如下：
-        # sed -i '/自定义项/d' .config
-        # echo "自定义项=y" >> .config
+        # sed -i '/自定义项/d' configs/templates/$TNAME.config
+        # echo "自定义项=y" >> configs/templates/$TNAME.config
         #########################################################################################
-        sed -i "s/^CONFIG_TOOLCHAIN_DIR=.*$/CONFIG_TOOLCHAIN_DIR=${CONFIG_TOOLCHAIN_DIR}/g" .config
-        sudo ./clear_tree_simple
-        sudo ./build_firmware_modify $m 0
+        sudo ./clear_tree
+        cp -f configs/templates/$TNAME.config .config
+        sudo fakeroot ./build_firmware_modify $TNAME 0
+        #sudo ./build_firmware_modify $TNAME 0
         sudo mv -f images/*.trx /opt/images/
-        done
-    - name : 上传编译的固件Artifacts
-      uses: actions/upload-artifact@v2
-      if: true
+        #cp .config /opt/images/test.config
+    - name : Upload packages
+      uses: actions/upload-artifact@master
+      if: always()
       with:
-        name: ${{ env.TNAME }}_${{ env.VERSION }}
+        name: MI-R4A-ZDXZCJ-CP1100MHZ-Padavan-packages
         path: /opt/images
-        
-    - name: 发布到Release
-      #if: ${{ github.event.inputs.release == 'yes' }}
-      uses: softprops/action-gh-release@v1
-      with:
-        name: ${{ env.TNAME }}_${{ env.VERSION }}
-        tag_name: ${{ env.VERSION }}
-        #body_path: /opt/images/readme.txt
-        draft: false
-        prerelease: false
-        files: /opt/images/*
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
