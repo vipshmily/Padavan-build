@@ -6,7 +6,7 @@ on:
     inputs:
       production:
         description: 设置编译的固件型号,空格分隔.
-        default: "MI-R4A RM2100 K2P K2P_nano"
+        default: "MI-R4A RM2100 K2P K2P-512 R2100"
         required: false
       release:
         description: "是否需要发布到Release? (不发布也可以到Artifacts下载)"
