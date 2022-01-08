@@ -1,22 +1,20 @@
-# 注意：修改 TNAME:    中的型号为你需要编译的型号，注意名称要与configs/templates/目录下的名字相同
+# 注意：修改 default:    中的型号为你需要编译的型号，注意名称要与configs/templates/目录下的名字相同
 name: Build Padavan
 
-on: 
-  release:
-    types: [published]
-#  push:
-#    tags:
-#    - 'v*'
-  #  branches: 
-  #    - master
-  #schedule:
-    #- cron: 0 17 * * 4
-  #watch:
-    #types: [started]
+on:
   workflow_dispatch:
+    inputs:
+      production:
+        description: 设置编译的固件型号,空格分隔.
+        default: "PSG1218"
+        required: false
+      release:
+        description: "是否需要发布到Release? (不发布也可以到Artifacts下载)"
+        default: 'yes'
+        required: false
+        
 env:                      # 环境变量
   MHZ: 1100               # CPU超频频率 必须为20的倍数，开启超频需开启95行超频开关
-  TNAME: "PSG1218"
 
 jobs:
   build:
@@ -31,7 +29,7 @@ jobs:
         whoami
         id
         echo 接收到的输入参数:
-        echo "${{ github.event.env.TNAME }}"
+        echo "${{ github.event.inputs.production }}"
         echo "${{ github.event.inputs.release }}"
         echo 
         echo 当前目录:$(pwd)
@@ -40,13 +38,14 @@ jobs:
         echo "VERSION=$VERSION" >> $GITHUB_ENV
         # $GITHUB_ENV变量必须要在下一个流程才生效
         echo "DIR=/opt/rt-n56u2" >> $GITHUB_ENV
-        val1="${{ github.event.env.TNAME }}"
+        val1="${{ github.event.inputs.production }}"
         #val2=$(echo $val1 | sed 's/ /-/')
         echo "NAME=${val1}_$VERSION" >> $GITHUB_ENV
         #让版本号符合版本规范 1.0.202110252117+K2P-PSG1218
         # 2021.10.28-2133+K2P-PSG1218
         echo "TAG=v$VERSION" >> $GITHUB_ENV
         ip addr
+        
     - name: Initialization environment
       env:
         DEBIAN_FRONTEND: noninteractive
@@ -55,6 +54,7 @@ jobs:
         sudo apt-get -y install unzip libtool-bin curl cmake gperf gawk flex bison nano xxd fakeroot \
         cpio git python-docutils gettext automake autopoint texinfo build-essential help2man \
         pkg-config zlib1g-dev libgmp3-dev libmpc-dev libmpfr-dev libncurses5-dev libltdl-dev wget
+        
     - name: Clone source code
       run: |
         git clone --depth=1 https://github.com/vipshmily/rt-n56u2.git ${{ env.DIR }}
@@ -68,9 +68,10 @@ jobs:
       uses: actions/setup-go@v2
       with:
         go-version: ${{ steps.vars.outputs.go_version }}
+        
     - name: Build Firmware
-      #env:
-        #TNAME: "PSG1218"
+      env:
+        TNAME: "${{ github.event.inputs.production }}"
       run: |
         cwd=`pwd`
         CONFIG_TOOLCHAIN_DIR=${cwd//\//\\\/}\\/toolchain-mipsel
