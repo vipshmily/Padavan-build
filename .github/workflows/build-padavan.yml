@@ -16,6 +16,7 @@ on:
   workflow_dispatch:
 env:                      # 环境变量
   MHZ: 1100               # CPU超频频率 必须为20的倍数，开启超频需开启95行超频开关
+  TNAME: "PSG1218"
 
 jobs:
   build:
@@ -68,8 +69,8 @@ jobs:
       with:
         go-version: ${{ steps.vars.outputs.go_version }}
     - name: Build Firmware
-      env:
-        TNAME: "PSG1218"
+      #env:
+        #TNAME: "PSG1218"
       run: |
         cwd=`pwd`
         CONFIG_TOOLCHAIN_DIR=${cwd//\//\\\/}\\/toolchain-mipsel
