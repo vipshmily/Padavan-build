@@ -16,7 +16,6 @@ on:
   workflow_dispatch:
 env:                      # 环境变量
   MHZ: 1100               # CPU超频频率 必须为20的倍数，开启超频需开启95行超频开关
-  images_dir: /opt/images
 
 jobs:
   build:
@@ -31,16 +30,21 @@ jobs:
         whoami
         id
         echo 接收到的输入参数:
-        echo "${{ github.event.inputs.TNAME }}"
+        echo "${{ github.event.env.TNAME }}"
         echo "${{ github.event.inputs.release }}"
         echo 
         echo 当前目录:$(pwd)
-        # 版本号
-        VERSION=$(TZ='Asia/Shanghai' date +%Y%m%d.%H%M)
+        # 版本号,用日期
+        VERSION=$(TZ='Asia/Shanghai' date +%Y.%m.%d-%H%M)
         echo "VERSION=$VERSION" >> $GITHUB_ENV
         # $GITHUB_ENV变量必须要在下一个流程才生效
-        echo "DIR=/opt/rt-n56u" >> $GITHUB_ENV
-        echo "TNAME=$TNAME" >> $GITHUB_ENV
+        echo "DIR=/opt/rt-n56u2" >> $GITHUB_ENV
+        val1="${{ github.event.env.TNAME }}"
+        #val2=$(echo $val1 | sed 's/ /-/')
+        echo "NAME=${val1}_$VERSION" >> $GITHUB_ENV
+        #让版本号符合版本规范 1.0.202110252117+K2P-PSG1218
+        # 2021.10.28-2133+K2P-PSG1218
+        echo "TAG=v$VERSION" >> $GITHUB_ENV
         ip addr
     - name: Initialization environment
       env:
@@ -175,16 +179,16 @@ jobs:
       uses: actions/upload-artifact@v2
       if: true
       with:
-        name: ${{ env.TNAME }}_${{ env.VERSION }}
+        name: ${{ env.NAME }}
         path: /opt/images
         
     - name: 发布到Release
-      #if: ${{ github.event.inputs.release == 'yes' }}
+      if: ${{ github.event.inputs.release == 'yes' }}
       uses: softprops/action-gh-release@v1
       with:
-        name: ${{ env.TNAME }}_${{ env.VERSION }}
-        tag_name: ${{ env.VERSION }}
-        #body_path: /opt/images/readme.txt
+        name: ${{ env.NAME }}
+        tag_name: ${{ env.TAG }}
+        body_path: /opt/images/readme.txt
         draft: false
         prerelease: false
         files: /opt/images/*
