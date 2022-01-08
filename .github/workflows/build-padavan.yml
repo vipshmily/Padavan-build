@@ -45,6 +45,15 @@ jobs:
         # 2021.10.28-2133+K2P-PSG1218
         echo "TAG=v$VERSION" >> $GITHUB_ENV
         ip addr
+    - name: 创建目录
+      run: |
+        echo ${{ env.NAME }}
+        echo ${{ env.TAG }}
+        sudo mkdir -m 777 -p ${{ env.DIR }}
+        sudo mkdir -m 777 -p /opt/images/
+        
+        echo 开始编译时间 >> /opt/images/readme.txt
+        TZ='Asia/Shanghai'  date  '+%Y-%m-%d %H:%M:%S' >> /opt/images/readme.txt
         
     - name: Initialization environment
       env:
@@ -177,6 +186,35 @@ jobs:
         sudo ./build_firmware_modify $m 0
         sudo mv -f images/*.trx /opt/images/
         done
+    - name: 收集信息
+      if: true
+      run: |
+        cd /opt/images
+        #记录一个版本号
+        echo 完成编译时间 >> /opt/images/readme.txt
+        TZ='Asia/Shanghai'  date  '+%Y-%m-%d %H:%M:%S' >> /opt/images/readme.txt
+        
+        echo  >> /opt/images/readme.txt
+        echo 编译版本 >> /opt/images/readme.txt
+        
+        pushd ${{ env.DIR }}
+        git ls-remote --get-url origin >> /opt/images/readme.txt
+        git log -1 >> /opt/images/readme.txt
+        popd
+        
+        echo  >> /opt/images/readme.txt
+        echo md5校验值 >> /opt/images/readme.txt
+        cd /opt/images
+        #为固件文件名加上日期
+        for i in *.trx
+        do
+          #echo org $i
+          mv -v "$i" "${i%.*}-${{ env.VERSION }}.trx"
+        done
+        #测试
+        md5sum *.trx >> /opt/images/readme.txt || echo
+        ls -l      
+        
     - name : 上传编译的固件Artifacts
       uses: actions/upload-artifact@v2
       if: true
