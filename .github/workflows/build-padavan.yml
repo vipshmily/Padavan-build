@@ -22,7 +22,7 @@ jobs:
 
     steps:
     - name: Checkout
-      uses: actions/checkout@master
+      uses: actions/checkout@main
       
     - name: 生成版本号
       run: |
@@ -41,8 +41,6 @@ jobs:
         val1="${{ github.event.inputs.production }}"
         #val2=$(echo $val1 | sed 's/ /-/')
         echo "NAME=${val1}_$VERSION" >> $GITHUB_ENV
-        #让版本号符合版本规范 1.0.202110252117+K2P-PSG1218
-        # 2021.10.28-2133+K2P-PSG1218
         echo "TAG=v$VERSION" >> $GITHUB_ENV
         ip addr
     - name: 创建目录
