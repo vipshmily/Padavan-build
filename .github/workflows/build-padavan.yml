@@ -14,7 +14,7 @@ on:
         required: false
         
 env:                      # 环境变量
-  MHZ: 600               # CPU超频频率 必须为20的倍数，开启超频需开启95行超频开关
+  MHZ: 600               # CPU超频频率 必须为20的倍数，开启超频需开启159行超频开关
 
 jobs:
   build:
@@ -37,7 +37,7 @@ jobs:
         VERSION=$(TZ='Asia/Shanghai' date +%Y.%m.%d-%H%M)
         echo "VERSION=$VERSION" >> $GITHUB_ENV
         # $GITHUB_ENV变量必须要在下一个流程才生效
-        echo "DIR=/opt/rt-n56u2" >> $GITHUB_ENV
+        echo "DIR=/opt/rt-n56u" >> $GITHUB_ENV
         val1="${{ github.event.inputs.production }}"
         #val2=$(echo $val1 | sed 's/ /-/')
         echo "NAME=${val1}_$VERSION" >> $GITHUB_ENV
@@ -64,7 +64,7 @@ jobs:
         
     - name: Clone source code
       run: |
-        git clone --depth=1 https://github.com/vipshmily/rt-n56u2.git ${{ env.DIR }}
+        git clone --depth=1 https://github.com/vipshmily/rt-n56u.git ${{ env.DIR }}
         cd ${{ env.DIR }}/toolchain-mipsel
         sh dl_toolchain.sh
         mkdir -p /opt/images/
@@ -146,7 +146,7 @@ jobs:
         sed -i '/CONFIG_FIRMWARE_INCLUDE_SRELAY/d' .config #删除配置项SRELAY
         sed -i '/CONFIG_FIRMWARE_INCLUDE_NPC/d' .config #删除配置项NPC
         sed -i '/CONFIG_FIRMWARE_INCLUDE_KUMASOCKS/d' .config #删除配置项KUMASOCKS
-        sed -i '/CONFIG_FIRMWARE_CPU_900MHZ/d' .config #删除配置项超频900MHz
+        sed -i '/CONFIG_FIRMWARE_CPU_600MHZ/d' .config #删除配置项超频900MHz
         ######################################################################
         #以下选项是定义你需要的功能（y=集成,n=忽略），重新写入到.config文件
         ######################################################################
@@ -156,8 +156,8 @@ jobs:
         echo "CONFIG_FIRMWARE_INCLUDE_DNSFORWARDER=n" >> .config #DNSFORWARDER
         echo "CONFIG_FIRMWARE_INCLUDE_TUNSAFE=n" >> .config #TUNSAFE
         echo "CONFIG_FIRMWARE_INCLUDE_SRELAY=n" >> .config #可以不集成
-        echo "CONFIG_FIRMWARE_CPU_900MHZ=y" >> .config #开启超频，仅MT7621可用
-        ##科学上网## 特别注意，开启科学需要开启159行的shadowsocks，否则全部有关插件都不集成
+        echo "CONFIG_FIRMWARE_CPU_600MHZ=y" >> .config #开启超频，仅MT7621可用
+        ##科学上网## 特别注意，开启科学需要开启161行的shadowsocks，否则全部有关插件都不集成
         echo "CONFIG_FIRMWARE_INCLUDE_SHADOWSOCKS=y" >> .config #科学上网插件，选择n后全部有关插件都不集成
         echo "CONFIG_FIRMWARE_INCLUDE_SSOBFS=y" >> .config # simple-obfs混淆插件
         echo "CONFIG_FIRMWARE_INCLUDE_V2RAY=n" >> .config #集成v2ray执行文件（3.6M左右)，如果不集成，会从网上下载下来执行，不影响正常使用
