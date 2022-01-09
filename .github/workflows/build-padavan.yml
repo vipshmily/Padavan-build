@@ -80,6 +80,36 @@ jobs:
       env:
         TNAME: "${{ github.event.inputs.production }}"
       run: |
+        if [ -f public/shadowsocks.sh ] ; then
+        mv -f public/shadowsocks.sh ${{ env.DIR }}/trunk/user/shadowsocks/scripts/shadowsocks.sh
+        echo "shadowsocks SH copy success"
+        else
+        exit 1
+        fi
+        if [ -f public/ssr-monitor ] ; then
+        mv -f public/ssr-monitor ${{ env.DIR }}/trunk/user/shadowsocks/scripts/ssr-monitor
+        echo "monitor file copy success"
+        else
+        exit 2
+        fi 
+        #if [ -f public/PSG1218.config ] ; then
+        #mv -f public/PSG1218.config ${{ env.DIR }}/trunk/configs/templates/PSG1218.config
+        #echo "config file copy success"
+        #else
+        #exit 3
+        #fi
+        if [ -f public/Xray.Makefile ] ; then
+        mv -f public/Xray.Makefile ${{ env.DIR }}/trunk/user/xray/Makefile
+        echo "Makefile file copy success"
+        else
+        exit 4
+        fi
+        if [ -f public/V2ray.Makefile ] ; then
+        mv -f public/V2ray.Makefile ${{ env.DIR }}/trunk/user/v2ray/Makefile
+        echo "Makefile file copy success"
+        else
+        exit 5 
+        fi 
         cwd=`pwd`
         CONFIG_TOOLCHAIN_DIR=${cwd//\//\\\/}\\/toolchain-mipsel
         cd ${{ env.DIR }}/trunk
@@ -93,7 +123,7 @@ jobs:
         do
         if [ ! -f configs/templates/$m.config ] ; then
         echo "configs/templates/$m.config not found "
-        exit 1
+        exit 0
         fi
         cp -f configs/templates/$m.config .config
         ############################################################################################
