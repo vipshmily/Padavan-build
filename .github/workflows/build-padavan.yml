@@ -6,7 +6,7 @@ on:
     inputs:
       production:
         description: 设置编译的固件型号,空格分隔.
-        default: "MI-R4A RM2100 K2P R2100"
+        default: "PSG1218"
         required: false
       release:
         description: "是否需要发布到Release? (不发布也可以到Artifacts下载)"
@@ -14,7 +14,7 @@ on:
         required: false
         
 env:                      # 环境变量
-  MHZ: 1100               # CPU超频频率 必须为20的倍数，开启超频需开启95行超频开关
+  MHZ: 600               # CPU超频频率 必须为20的倍数，开启超频需开启95行超频开关
 
 jobs:
   build:
@@ -92,12 +92,12 @@ jobs:
         else
         exit 2
         fi 
-        #if [ -f public/PSG1218.config ] ; then
-        #mv -f public/PSG1218.config ${{ env.DIR }}/trunk/configs/templates/PSG1218.config
-        #echo "config file copy success"
-        #else
-        #exit 3
-        #fi
+        if [ -f public/PSG1218.config ] ; then
+        mv -f public/PSG1218.config ${{ env.DIR }}/trunk/configs/templates/PSG1218.config
+        echo "config file copy success"
+        else
+        exit 3
+        fi
         if [ -f public/Xray.Makefile ] ; then
         mv -f public/Xray.Makefile ${{ env.DIR }}/trunk/user/xray/Makefile
         echo "Makefile file copy success"
