@@ -15,7 +15,11 @@ CONFIG_UDP_FILE=/tmp/${NAME}_u.json
 CONFIG_SOCK5_FILE=/tmp/${NAME}_s.json
 CONFIG_KUMASOCKS_FILE=/tmp/kumasocks.toml
 v2_json_file="/tmp/v2-redir.json"
+xray_json_file="/tmp/v2-redir.json"
 trojan_json_file="/tmp/tj-redir.json"
+v2_bin="/usr/bin/v2ray"
+xr_bin="/usr/bin/v2ray"
+tj_bin="/usr/bin/trojan"
 server_count=0
 redir_tcp=0
 v2ray_enable=0
@@ -41,9 +45,9 @@ find_bin() {
 	ssr) ret="/usr/bin/ssr-redir" ;;
 	ssr-local) ret="/usr/bin/ssr-local" ;;
 	ssr-server) ret="/usr/bin/ssr-server" ;;
-	v2ray) ret="/usr/bin/v2ray" ;;
-	xray) ret="/usr/bin/v2ray" ;;
-	trojan) ret="/usr/bin/trojan" ;;
+	v2ray) ret="$v2_bin" ;;
+	xray) ret="$v2_bin" ;;
+	trojan) ret="$tj_bin" ;;
 	socks5) ret="/usr/bin/ipt2socks" ;;
 	esac
 	echo $ret
