@@ -15,11 +15,7 @@ CONFIG_UDP_FILE=/tmp/${NAME}_u.json
 CONFIG_SOCK5_FILE=/tmp/${NAME}_s.json
 CONFIG_KUMASOCKS_FILE=/tmp/kumasocks.toml
 v2_json_file="/tmp/v2-redir.json"
-xray_json_file="/tmp/v2-redir.json"
 trojan_json_file="/tmp/tj-redir.json"
-v2_bin="/usr/bin/v2ray"
-xr_bin="/usr/bin/v2ray"
-tj_bin="/usr/bin/trojan"
 server_count=0
 redir_tcp=0
 v2ray_enable=0
@@ -45,9 +41,21 @@ find_bin() {
 	ssr) ret="/usr/bin/ssr-redir" ;;
 	ssr-local) ret="/usr/bin/ssr-local" ;;
 	ssr-server) ret="/usr/bin/ssr-server" ;;
-	v2ray) ret="$v2_bin" ;;
-	xray) ret="$v2_bin" ;;
-	trojan) ret="$tj_bin" ;;
+	v2ray) 
+		if [ -f "/usr/bin/v2ray" ]; then
+			ret="/usr/bin/v2ray" 
+		else
+			ret="/usr/bin/xray" 
+		fi
+		;;
+	xray) 
+		if [ -f "/usr/bin/xray" ]; then
+			ret="/usr/bin/xray" 
+		else
+			ret="/usr/bin/v2ray"
+		fi
+		;;
+	trojan) ret="/usr/bin/trojan" ;;
 	socks5) ret="/usr/bin/ipt2socks" ;;
 	esac
 	echo $ret
@@ -300,11 +308,11 @@ start_redir_tcp() {
 		echo "$(date "+%Y-%m-%d %H:%M:%S") $($bin --version 2>&1 | head -1) Started!" >>/tmp/ssrplus.log
 		;;
 	v2ray)
-		SSL_CERT_FILE=/usr/bin/cacert.pem $bin -config $v2_json_file >/dev/null 2>&1 &
+		$bin -config $v2_json_file >/dev/null 2>&1 &
 		echo "$(date "+%Y-%m-%d %H:%M:%S") $($bin -version | head -1) 启动成功!" >>/tmp/ssrplus.log
 		;;
 	xray)
-		SSL_CERT_FILE=/usr/bin/cacert.pem $bin -config $v2_json_file >/dev/null 2>&1 &
+		$bin -config $v2_json_file >/dev/null 2>&1 &
 		echo "$(date "+%Y-%m-%d %H:%M:%S") $($bin -version | head -1) 启动成功!" >>/tmp/ssrplus.log
 		;;	
 	socks5)
@@ -334,11 +342,11 @@ start_redir_udp() {
 			;;
 		v2ray)
 			gen_config_file $UDP_RELAY_SERVER 1
-			SSL_CERT_FILE=/usr/bin/cacert.pem $bin -config /tmp/v2-ssr-reudp.json >/dev/null 2>&1 &
+			$bin -config /tmp/v2-ssr-reudp.json >/dev/null 2>&1 &
 			;;
 		xray)
 			gen_config_file $UDP_RELAY_SERVER 1
-			SSL_CERT_FILE=/usr/bin/cacert.pem $bin -config /tmp/v2-ssr-reudp.json >/dev/null 2>&1 &
+			$bin -config /tmp/v2-ssr-reudp.json >/dev/null 2>&1 &
 			;;	
 		trojan)
 			gen_config_file $UDP_RELAY_SERVER 1
@@ -448,13 +456,13 @@ start_local() {
 	v2ray)
 		lua /etc_ro/ss/genv2config.lua $local_server tcp 0 $s5_port >/tmp/v2-ssr-local.json
 		sed -i 's/\\//g' /tmp/v2-ssr-local.json
-		SSL_CERT_FILE=/usr/bin/cacert.pem $bin -config /tmp/v2-ssr-local.json >/dev/null 2>&1 &
+		$bin -config /tmp/v2-ssr-local.json >/dev/null 2>&1 &
 		echo "$(date "+%Y-%m-%d %H:%M:%S") Global_Socks5:$($bin -version | head -1) Started!" >>/tmp/ssrplus.log
 		;;
 	xray)
 		lua /etc_ro/ss/genxrayconfig.lua $local_server tcp 0 $s5_port >/tmp/v2-ssr-local.json
 		sed -i 's/\\//g' /tmp/v2-ssr-local.json
-		SSL_CERT_FILE=/usr/bin/cacert.pem $bin -config /tmp/v2-ssr-local.json >/dev/null 2>&1 &
+		$bin -config /tmp/v2-ssr-local.json >/dev/null 2>&1 &
 		echo "$(date "+%Y-%m-%d %H:%M:%S") Global_Socks5:$($bin -version | head -1) Started!" >>/tmp/ssrplus.log
 		;;
 	trojan)
