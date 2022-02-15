@@ -48,21 +48,6 @@ find_bin() {
 	v2ray) ret="$v2_bin" ;;
 	xray) ret="$v2_bin" ;;
 	trojan) ret="$tj_bin" ;;
-	v2ray) 
-		if [ -f "/usr/bin/v2ray" ]; then
-			ret="/usr/bin/v2ray" 
-		else
-			ret="/usr/bin/xray" 
-		fi
-		;;
-	xray) 
-		if [ -f "/usr/bin/xray" ]; then
-			ret="/usr/bin/xray" 
-		else
-			ret="/usr/bin/v2ray"
-		fi
-		;;
-	trojan) ret="/usr/bin/trojan" ;;
 	socks5) ret="/usr/bin/ipt2socks" ;;
 	esac
 	echo $ret
