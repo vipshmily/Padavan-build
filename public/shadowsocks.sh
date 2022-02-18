@@ -8,6 +8,7 @@
 # This is free software, licensed under the GNU General Public License v3.
 # See /LICENSE for more information.
 #
+pppoemwan=`nvram get pppoemwan_enable`
 NAME=shadowsocksr
 http_username=`nvram get http_username`
 CONFIG_FILE=/tmp/${NAME}.json
@@ -15,11 +16,7 @@ CONFIG_UDP_FILE=/tmp/${NAME}_u.json
 CONFIG_SOCK5_FILE=/tmp/${NAME}_s.json
 CONFIG_KUMASOCKS_FILE=/tmp/kumasocks.toml
 v2_json_file="/tmp/v2-redir.json"
-xray_json_file="/tmp/v2-redir.json"
 trojan_json_file="/tmp/tj-redir.json"
-v2_bin="/usr/bin/v2ray"
-xr_bin="/usr/bin/v2ray"
-tj_bin="/usr/bin/trojan"
 server_count=0
 redir_tcp=0
 v2ray_enable=0
@@ -31,6 +28,7 @@ chinadnsng_enable_flag=0
 wan_bp_ips="/tmp/whiteip.txt"
 wan_fw_ips="/tmp/blackip.txt"
 lan_fp_ips="/tmp/lan_ip.txt"
+lan_gm_ips="/tmp/lan_gmip.txt"
 run_mode=`nvram get ss_run_mode`
 ss_turn=`nvram get ss_turn`
 lan_con=`nvram get lan_con`
@@ -44,9 +42,21 @@ find_bin() {
 	ssr) ret="/usr/bin/ssr-redir" ;;
 	ssr-local) ret="/usr/bin/ssr-local" ;;
 	ssr-server) ret="/usr/bin/ssr-server" ;;
-	v2ray) ret="$v2_bin" ;;
-	xray) ret="$v2_bin" ;;
-	trojan) ret="$tj_bin" ;;
+	v2ray) 
+		if [ -f "/usr/bin/v2ray" ]; then
+			ret="/usr/bin/v2ray" 
+		else
+			ret="/usr/bin/xray" 
+		fi
+		;;
+	xray) 
+		if [ -f "/usr/bin/xray" ]; then
+			ret="/usr/bin/xray" 
+		else
+			ret="/usr/bin/v2ray"
+		fi
+		;;
+	trojan) ret="/usr/bin/trojan" ;;
 	socks5) ret="/usr/bin/ipt2socks" ;;
 	esac
 	echo $ret
