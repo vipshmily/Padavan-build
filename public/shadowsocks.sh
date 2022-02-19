@@ -8,6 +8,7 @@
 # This is free software, licensed under the GNU General Public License v3.
 # See /LICENSE for more information.
 #
+pppoemwan=`nvram get pppoemwan_enable`
 NAME=shadowsocksr
 http_username=`nvram get http_username`
 CONFIG_FILE=/tmp/${NAME}.json
@@ -81,31 +82,6 @@ local type=$stype
 		;;
 	trojan)
 		tj_bin="/usr/bin/trojan"
-		if [ ! -f "$tj_bin" ]; then
-		if [ ! -f "/tmp/trojan" ]; then
-			curl -L -k -s -o /tmp/trojan --connect-timeout 10 --retry 3 https://cdn.jsdelivr.net/gh/vipshmily/OutSide/trojan
-			if [ ! -f "/tmp/trojan" ]; then
-				logger -t "SS" "trojan二进制文件下载失败，可能是地址失效或者网络异常！自动切换到备用下载！"
-				#curl -L -k -s -o /tmp/trojan --connect-timeout 10 --retry 3 https://bin.wololo.vercel.app/trojan
-				curl -L -k -s -o /tmp/trojan --connect-timeout 10 --retry 3 https://ghproxy.com/https://github.com/vipshmily/OutSide/blob/main/trojan
-				if [ ! -f "/tmp/trojan" ]; then
-					logger -t "SS" "trojan二进制文件备用下载失败！请自查网络！"
-					nvram set ss_enable=0
-					ssp_close
-				else
-					logger -t "SS" "trojan二进制文件备用下载成功"
-					chmod -R 777 /tmp/trojan
-					tj_bin="/tmp/trojan"
-				fi
-			else
-				logger -t "SS" "trojan二进制文件下载成功"
-				chmod -R 777 /tmp/trojan
-				tj_bin="/tmp/trojan"
-			fi
-		else
-			tj_bin="/tmp/trojan"		
-		fi
-		fi
 		if [ "$2" = "0" ]; then
 		lua /etc_ro/ss/gentrojanconfig.lua $1 nat 1080 >$trojan_json_file
 		sed -i 's/\\//g' $trojan_json_file
@@ -116,30 +92,6 @@ local type=$stype
 		;;
 	v2ray)
 		v2_bin="/usr/bin/v2ray"
-		if [ ! -f "$v2_bin" ]; then
-		if [ ! -f "/tmp/v2ray" ]; then
-			curl -L -k -s -o /tmp/v2ray --connect-timeout 10 --retry 3 https://cdn.jsdelivr.net/gh/vipshmily/OutSide/xray
-			if [ ! -f "/tmp/v2ray" ]; then
-				logger -t "SS" "Xray二进制文件下载失败，可能是地址失效或者网络异常！自动切换到备用下载！"
-				curl -L -k -s -o /tmp/v2ray --connect-timeout 10 --retry 3 https://ghproxy.com/https://github.com/vipshmily/OutSide/blob/main/xray
-				if [ ! -f "/tmp/v2ray" ]; then
-					logger -t "SS" "Xray二进制文件备用下载失败！请自查网络！"
-					nvram set ss_enable=0
-					ssp_close
-				else
-					logger -t "SS" "Xray二进制文件备用下载成功"
-					chmod -R 777 /tmp/v2ray
-					v2_bin="/tmp/v2ray"
-				fi
-			else
-				logger -t "SS" "Xray二进制文件下载成功"
-				chmod -R 777 /tmp/v2ray
-				v2_bin="/tmp/v2ray"
-			fi
-		else
-				v2_bin="/tmp/v2ray"
-		fi
-		fi
 		v2ray_enable=1
 		if [ "$2" = "1" ]; then
 		lua /etc_ro/ss/genv2config.lua $1 udp 1080 >/tmp/v2-ssr-reudp.json
@@ -151,30 +103,6 @@ local type=$stype
 		;;
 	xray)
 		v2_bin="/usr/bin/v2ray"
-		if [ ! -f "$v2_bin" ]; then
-		if [ ! -f "/tmp/v2ray" ]; then
-			curl -L -k -s -o /tmp/v2ray --connect-timeout 10 --retry 3 https://cdn.jsdelivr.net/gh/vipshmily/OutSide/xray
-			if [ ! -f "/tmp/v2ray" ]; then
-				logger -t "SS" "Xray二进制文件下载失败，可能是地址失效或者网络异常！自动切换到备用下载！"
-				curl -L -k -s -o /tmp/v2ray --connect-timeout 10 --retry 3 https://ghproxy.com/https://github.com/vipshmily/OutSide/blob/main/xray
-				if [ ! -f "/tmp/v2ray" ]; then
-					logger -t "SS" "Xray二进制文件备用下载失败！请自查网络！"
-					nvram set ss_enable=0
-					ssp_close
-				else
-					logger -t "SS" "Xray二进制文件备用下载成功"
-					chmod -R 777 /tmp/v2ray
-					v2_bin="/tmp/v2ray"
-				fi
-			else
-				logger -t "SS" "Xray二进制文件下载成功"
-				chmod -R 777 /tmp/v2ray
-				v2_bin="/tmp/v2ray"
-			fi
-		else
-				v2_bin="/tmp/v2ray"
-		fi
-		fi
 		v2ray_enable=1
 		if [ "$2" = "1" ]; then
 		lua /etc_ro/ss/genxrayconfig.lua $1 udp 1080 >/tmp/v2-ssr-reudp.json
@@ -540,6 +468,9 @@ if rules; then
         logger -t "SS" "启动成功。"
         logger -t "SS" "内网IP控制为:$lancons"
         nvram set check_mode=0
+        if [ "$pppoemwan" -ne 0 ]; then
+        /usr/bin/detect.sh
+        fi
 }
 
 # ================================= 关闭SS ===============================
@@ -560,6 +491,9 @@ ssp_close() {
 	fi
 	clear_iptable
 	/sbin/restart_dhcpd
+	if [ "$pppoemwan" -ne 0 ]; then
+        /usr/bin/detect.sh
+        fi
 }
 
 
@@ -576,7 +510,7 @@ clear_iptable()
 kill_process() {
 	v2ray_process=$(pidof v2ray)
 	if [ -n "$v2ray_process" ]; then
-		logger -t "SS" "关闭Xray进程..."
+		logger -t "SS" "关闭V2Ray进程..."
 		killall v2ray >/dev/null 2>&1
 		kill -9 "$v2ray_process" >/dev/null 2>&1
 	fi
