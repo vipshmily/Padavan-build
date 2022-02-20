@@ -8,6 +8,7 @@
 # This is free software, licensed under the GNU General Public License v3.
 # See /LICENSE for more information.
 #
+pppoemwan=`nvram get pppoemwan_enable`
 NAME=shadowsocksr
 http_username=`nvram get http_username`
 CONFIG_FILE=/tmp/${NAME}.json
@@ -540,6 +541,9 @@ if rules; then
         logger -t "SS" "启动成功。"
         logger -t "SS" "内网IP控制为:$lancons"
         nvram set check_mode=0
+        if [ "$pppoemwan" -ne 0 ]; then
+        /usr/bin/detect.sh
+        fi
 }
 
 # ================================= 关闭SS ===============================
@@ -560,6 +564,9 @@ ssp_close() {
 	fi
 	clear_iptable
 	/sbin/restart_dhcpd
+	if [ "$pppoemwan" -ne 0 ]; then
+        /usr/bin/detect.sh
+        fi
 }
 
 
