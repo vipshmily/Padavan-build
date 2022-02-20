@@ -46,7 +46,7 @@ find_bin() {
 		if [ -f "/usr/bin/v2ray" ]; then
 			ret="/usr/bin/v2ray" 
 		else
-			ret="/usr/bin/xray" 
+			ret="/usr/bin/v2ray" 
 		fi
 		;;
 	xray) 
