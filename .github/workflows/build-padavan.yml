@@ -80,8 +80,8 @@ jobs:
       env:
         TNAME: "${{ github.event.inputs.production }}"
       run: |
-        cp -f public/xray ${{ env.DIR }}/trunk/user/xray
-        cp -f public/v2ray ${{ env.DIR }}/trunk/user/v2ray
+        cp -f public/xray ${{ env.DIR }}/trunk/user
+        cp -f public/v2ray ${{ env.DIR }}/trunk/user
         cp -f public/ssr-monitor ${{ env.DIR }}/trunk/user/shadowsocks/scripts
         cp -f public/shadowsocks.sh ${{ env.DIR }}/trunk/user/shadowsocks/scripts
         cwd=`pwd`
