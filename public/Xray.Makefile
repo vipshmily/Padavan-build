@@ -11,9 +11,9 @@ XRAY_SED_ARGS += \
 XRAY_SED_ARGS += \
 	s/_ "xray.com\/core\/main\/json"/\/\/ &/;
 
-all:download_v2 build_extract build_xray
+all:download_xray build_extract build_xray
 
-download_v2:
+download_xray:
 	( if [ ! -f $(THISDIR)/xray ]; then \
 		if [ ! -f $(THISDIR)/xray-core-$(Xray_VERSION).tar.gz ]; then \
 			curl --create-dirs -L $(Xray_URL) -o $(THISDIR)/xray-core-$(Xray_VERSION).tar.gz ; \
