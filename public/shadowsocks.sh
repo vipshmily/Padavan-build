@@ -8,6 +8,7 @@
 # This is free software, licensed under the GNU General Public License v3.
 # See /LICENSE for more information.
 #
+pppoemwan=`nvram get pppoemwan_enable`
 NAME=shadowsocksr
 http_username=`nvram get http_username`
 CONFIG_FILE=/tmp/${NAME}.json
@@ -15,11 +16,7 @@ CONFIG_UDP_FILE=/tmp/${NAME}_u.json
 CONFIG_SOCK5_FILE=/tmp/${NAME}_s.json
 CONFIG_KUMASOCKS_FILE=/tmp/kumasocks.toml
 v2_json_file="/tmp/v2-redir.json"
-xray_json_file="/tmp/v2-redir.json"
 trojan_json_file="/tmp/tj-redir.json"
-v2_bin="/usr/bin/v2ray"
-xr_bin="/usr/bin/v2ray"
-tj_bin="/usr/bin/trojan"
 server_count=0
 redir_tcp=0
 v2ray_enable=0
@@ -31,6 +28,7 @@ chinadnsng_enable_flag=0
 wan_bp_ips="/tmp/whiteip.txt"
 wan_fw_ips="/tmp/blackip.txt"
 lan_fp_ips="/tmp/lan_ip.txt"
+lan_gm_ips="/tmp/lan_gmip.txt"
 run_mode=`nvram get ss_run_mode`
 ss_turn=`nvram get ss_turn`
 lan_con=`nvram get lan_con`
@@ -44,9 +42,21 @@ find_bin() {
 	ssr) ret="/usr/bin/ssr-redir" ;;
 	ssr-local) ret="/usr/bin/ssr-local" ;;
 	ssr-server) ret="/usr/bin/ssr-server" ;;
-	v2ray) ret="$v2_bin" ;;
-	xray) ret="$v2_bin" ;;
-	trojan) ret="$tj_bin" ;;
+	v2ray) 
+		if [ -f "/usr/bin/v2ray" ]; then
+			ret="/usr/bin/v2ray" 
+		else
+			ret="/usr/bin/xray" 
+		fi
+		;;
+	xray) 
+		if [ -f "/usr/bin/xray" ]; then
+			ret="/usr/bin/xray" 
+		else
+			ret="/usr/bin/v2ray"
+		fi
+		;;
+	trojan) ret="/usr/bin/trojan" ;;
 	socks5) ret="/usr/bin/ipt2socks" ;;
 	esac
 	echo $ret
@@ -198,7 +208,7 @@ start_rules() {
 	elif [ "$server" != "${server#*:[0-9a-fA-F]}" ]; then
 		server=${server}
 	else
-		server=$(ping ${server} -s 1 -c 1 | grep PING | cut -d'(' -f 2 | cut -d')' -f1)
+		server=$(resolveip -4 -t 3 $server | awk 'NR==1{print}')
 		if echo $server | grep -E "^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$" >/dev/null; then
 			echo $server >/etc/storage/ssr_ip
 		else
@@ -243,6 +253,8 @@ start_rules() {
 		lancons="指定IP走代理,请到规则管理页面添加需要走代理的IP。"
 		cat /etc/storage/ss_lan_bip.sh | grep -v '^!' | grep -v "^$" >$lan_fp_ips
 	fi
+		rm -f $lan_gm_ips
+		cat /etc/storage/ss_lan_gmip.sh | grep -v '^!' | grep -v "^$" >$lan_gm_ips
 	dports=$(nvram get s_dports)
 	if [ $dports = "0" ]; then
 		proxyport=" "
@@ -259,7 +271,6 @@ start_rules() {
 	-b "$wan_bp_ips" \
 	-w "$wan_fw_ips" \
 	-p "$lan_fp_ips" \
-	-G "$lan_gm_ips" \
 	-G "$lan_gm_ips" \
 	-D "$proxyport" \
 	-k "$lancon" \
@@ -362,44 +373,30 @@ start_redir_udp() {
 
 
 start_dns() {
-case "$run_mode" in
-	router)
 		echo "create china hash:net family inet hashsize 1024 maxelem 65536" >/tmp/china.ipset
 		awk '!/^$/&&!/^#/{printf("add china %s'" "'\n",$0)}' /etc/storage/chinadns/chnroute.txt >>/tmp/china.ipset
 		ipset -! flush china
 		ipset -! restore </tmp/china.ipset 2>/dev/null
 		rm -f /tmp/china.ipset
-		if [ $(nvram get ss_chdns) = 1 ]; then
-			chinadnsng_enable_flag=1
-			logger -t "SS" "下载cdn域名文件..."
-			wget --no-check-certificate --timeout=8 -qO - https://raw.githubusercontent.com/hq450/fancyss/master/rules/cdn.txt > /tmp/cdn.txt
-			if [ ! -f "/tmp/cdn.txt" ]; then
-				logger -t "SS" "cdn域名文件下载失败，可能是地址失效或者网络异常！可能会影响部分国内域名解析了国外的IP！"
-			else
-				logger -t "SS" "cdn域名文件下载成功"
-			fi
-			logger -st "SS" "启动chinadns..."
-			dns2tcp -L"127.0.0.1#5353" -R"$(nvram get tunnel_forward)" >/dev/null 2>&1 &
-			chinadns-ng -b 0.0.0.0 -l 65353 -c $(nvram get china_dns) -t 127.0.0.1#5353 -4 china -M -m /tmp/cdn.txt >/dev/null 2>&1 &
-			sed -i '/no-resolv/d' /etc/storage/dnsmasq/dnsmasq.conf
-			sed -i '/server=127.0.0.1/d' /etc/storage/dnsmasq/dnsmasq.conf
-			cat >> /etc/storage/dnsmasq/dnsmasq.conf << EOF
-no-resolv
-server=127.0.0.1#65353
-EOF
-    		fi
+case "$run_mode" in
+	router)
+		dnsstr="$(nvram get tunnel_forward)"
+		dnsserver=$(echo "$dnsstr" | awk -F '#' '{print $1}')
+		#dnsport=$(echo "$dnsstr" | awk -F '#' '{print $2}')
+		logger -st "SS" "启动dns2tcp：5353端口..."
+		dns2tcp -L"127.0.0.1#5353" -R"$dnsstr" >/dev/null 2>&1 &
+		pdnsd_enable_flag=0	
+		logger -st "SS" "开始处理gfwlist..."
 	;;
 	gfw)
-		if [ $(nvram get pdnsd_enable) = 0 ]; then
-			dnsstr="$(nvram get tunnel_forward)"
-			dnsserver=$(echo "$dnsstr" | awk -F '#' '{print $1}')
-			#dnsport=$(echo "$dnsstr" | awk -F '#' '{print $2}')
-			ipset add gfwlist $dnsserver 2>/dev/null
-			logger -st "SS" "启动dns2tcp：5353端口..."
-			dns2tcp -L"127.0.0.1#5353" -R"$dnsstr" >/dev/null 2>&1 &
-			pdnsd_enable_flag=0	
-			logger -st "SS" "开始处理gfwlist..."
-		fi
+		dnsstr="$(nvram get tunnel_forward)"
+		dnsserver=$(echo "$dnsstr" | awk -F '#' '{print $1}')
+		#dnsport=$(echo "$dnsstr" | awk -F '#' '{print $2}')
+		ipset add gfwlist $dnsserver 2>/dev/null
+		logger -st "SS" "启动dns2tcp：5353端口..."
+		dns2tcp -L"127.0.0.1#5353" -R"$dnsstr" >/dev/null 2>&1 &
+		pdnsd_enable_flag=0	
+		logger -st "SS" "开始处理gfwlist..."
 		;;
 	oversea)
 		ipset add gfwlist $dnsserver 2>/dev/null
@@ -506,13 +503,6 @@ start_watchcat() {
 			/usr/bin/ssr-monitor $server_count $redir_tcp $redir_udp $tunnel_enable $v2ray_enable $local_enable $pdnsd_enable_flag $chinadnsng_enable_flag >/dev/null 2>&1 &
 		fi
 	fi
-	#if [ $(nvram get ss_watchcat) = 1 ]; then
-		#let total_count=server_count+redir_tcp+redir_udp+tunnel_enable+xray_enable+local_enable+pdnsd_enable_flag+chinadnsng_enable_flag
-		#if [ $total_count -gt 0 ]; then
-			#param:server(count) redir_tcp(0:no,1:yes)  redir_udp tunnel kcp local gfw
-			#/usr/bin/ssr-monitor $server_count $redir_tcp $redir_udp $tunnel_enable $xray_enable $local_enable $pdnsd_enable_flag $chinadnsng_enable_flag >/dev/null 2>&1 &
-		#fi
-	#fi
 }
 
 auto_update() {
@@ -551,6 +541,9 @@ if rules; then
         logger -t "SS" "启动成功。"
         logger -t "SS" "内网IP控制为:$lancons"
         nvram set check_mode=0
+        if [ "$pppoemwan" -ne 0 ]; then
+        /usr/bin/detect.sh
+        fi
 }
 
 # ================================= 关闭SS ===============================
@@ -571,6 +564,9 @@ ssp_close() {
 	fi
 	clear_iptable
 	/sbin/restart_dhcpd
+	if [ "$pppoemwan" -ne 0 ]; then
+        /usr/bin/detect.sh
+        fi
 }
 
 
