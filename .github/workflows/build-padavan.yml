@@ -6,7 +6,7 @@ on:
     inputs:
       production:
         description: 设置编译的固件型号,空格分隔.
-        default: "NETGEAR-BZV"
+        default: "MI-R4A"
         required: false
       release:
         description: "是否需要发布到Release? (不发布也可以到Artifacts下载)"
@@ -14,7 +14,7 @@ on:
         required: false
         
 env:                      # 环境变量
-  MHZ: 1100               # CPU超频频率 必须为20的倍数，开启超频需开启95行超频开关
+  MHZ: 1100               # CPU超频频率 必须为20的倍数
 
 jobs:
   build:
@@ -143,7 +143,7 @@ jobs:
         echo "CONFIG_FIRMWARE_INCLUDE_TUNSAFE=n" >> .config #TUNSAFE
         echo "CONFIG_FIRMWARE_INCLUDE_SRELAY=n" >> .config #可以不集成
         echo "CONFIG_FIRMWARE_CPU_900MHZ=y" >> .config #开启超频，仅MT7621可用
-        ##科学上网## 特别注意，开启科学需要开启159行的shadowsocks，否则全部有关插件都不集成
+        ##科学上网## 
         echo "CONFIG_FIRMWARE_INCLUDE_SHADOWSOCKS=y" >> .config #科学上网插件，选择n后全部有关插件都不集成
         echo "CONFIG_FIRMWARE_INCLUDE_SSOBFS=y" >> .config # simple-obfs混淆插件
         echo "CONFIG_FIRMWARE_INCLUDE_V2RAY=n" >> .config #集成v2ray执行文件（3.6M左右)，如果不集成，会从网上下载下来执行，不影响正常使用
