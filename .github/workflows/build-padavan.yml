@@ -14,7 +14,7 @@ on:
         required: false
         
 env:                      # 环境变量
-  MHZ: 1100               # CPU超频频率 必须为20的倍数
+  MHZ: 1120               # CPU超频频率 必须为20的倍数
 
 jobs:
   build:
@@ -153,12 +153,12 @@ jobs:
         ##科学上网##
         
         ##广告管理##
-        echo "CONFIG_FIRMWARE_INCLUDE_ADBYBY=y" >> .config #adbyby plus+
+        echo "CONFIG_FIRMWARE_INCLUDE_ADBYBY=n" >> .config #adbyby plus+
         echo "CONFIG_FIRMWARE_INCLUDE_KOOLPROXY=n" >> .config #KP广告过滤
         ##广告管理##
         
         ##DNS服务##
-        echo "CONFIG_FIRMWARE_INCLUDE_SMARTDNS=y" >> .config #smartdns
+        echo "CONFIG_FIRMWARE_INCLUDE_SMARTDNS=n" >> .config #smartdns
         echo "CONFIG_FIRMWARE_INCLUDE_SMARTDNSBIN=n" >> .config #smartdns二进制文件
         echo "CONFIG_FIRMWARE_INCLUDE_ADGUARDHOME=n" >> .config #adg DNS去AD
         ##DNS服务##
@@ -175,15 +175,15 @@ jobs:
         
         ##内网穿透服务##
         echo "CONFIG_FIRMWARE_INCLUDE_ZEROTIER=n" >> .config #zerotier ~1.3M
-        echo "CONFIG_FIRMWARE_INCLUDE_ALIDDNS=y" >> .config #阿里DDNS
+        echo "CONFIG_FIRMWARE_INCLUDE_ALIDDNS=n" >> .config #阿里DDNS
         echo "CONFIG_FIRMWARE_INCLUDE_FRPC=n" >> .config #内网穿透FRPC
         echo "CONFIG_FIRMWARE_INCLUDE_FRPS=n" >> .config #内网穿透FRPS
-        echo "CONFIG_FIRMWARE_INCLUDE_DDNSTO=y" >> .config #ddnsto  ~0.5M
+        echo "CONFIG_FIRMWARE_INCLUDE_DDNSTO=n" >> .config #ddnsto  ~0.5M
         echo "CONFIG_FIRMWARE_INCLUDE_NPC=n" >> .config #npc
         ##内网穿透服务##
-        echo "CONFIG_FIRMWARE_INCLUDE_ALDRIVER=y" >> .config #ALDRIVER  ~3m
-        echo "CONFIG_FIRMWARE_INCLUDE_SQM=y" >> .config #SQM
-        echo "CONFIG_FIRMWARE_INCLUDE_WIREGUARD=y" >>.config #wireguard 10k 
+        echo "CONFIG_FIRMWARE_INCLUDE_ALDRIVER=" >> .config #ALDRIVER  ~3m
+        echo "CONFIG_FIRMWARE_INCLUDE_SQM=n" >> .config #SQM
+        echo "CONFIG_FIRMWARE_INCLUDE_WIREGUARD=n" >>.config #wireguard 10k 
         
           # 更新v2ray版本
           v2_version=`curl --silent "https://api.github.com/repos/v2fly/v2ray-core/releases/latest" | jq -r '.tag_name | sub("^v";"")'`
