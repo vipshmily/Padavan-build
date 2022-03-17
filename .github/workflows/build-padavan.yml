@@ -158,7 +158,7 @@ jobs:
         ##广告管理##
         
         ##DNS服务##
-        echo "CONFIG_FIRMWARE_INCLUDE_SMARTDNS=n" >> .config #smartdns
+        echo "CONFIG_FIRMWARE_INCLUDE_SMARTDNS=y" >> .config #smartdns
         echo "CONFIG_FIRMWARE_INCLUDE_SMARTDNSBIN=n" >> .config #smartdns二进制文件
         echo "CONFIG_FIRMWARE_INCLUDE_ADGUARDHOME=n" >> .config #adg DNS去AD
         ##DNS服务##
@@ -181,7 +181,7 @@ jobs:
         echo "CONFIG_FIRMWARE_INCLUDE_DDNSTO=n" >> .config #ddnsto  ~0.5M
         echo "CONFIG_FIRMWARE_INCLUDE_NPC=n" >> .config #npc
         ##内网穿透服务##
-        echo "CONFIG_FIRMWARE_INCLUDE_ALDRIVER=" >> .config #ALDRIVER  ~3m
+        echo "CONFIG_FIRMWARE_INCLUDE_ALDRIVER=n" >> .config #ALDRIVER  ~3m
         echo "CONFIG_FIRMWARE_INCLUDE_SQM=n" >> .config #SQM
         echo "CONFIG_FIRMWARE_INCLUDE_WIREGUARD=n" >>.config #wireguard 10k 
         
