@@ -8,6 +8,7 @@
 # This is free software, licensed under the GNU General Public License v3.
 # See /LICENSE for more information.
 #
+pppoemwan=`nvram get pppoemwan_enable`
 NAME=shadowsocksr
 http_username=`nvram get http_username`
 CONFIG_FILE=/tmp/${NAME}.json
@@ -183,7 +184,7 @@ local type=$stype
 		lua /etc_ro/ss/genxrayconfig.lua $1 tcp 1080 >$v2_json_file
 		sed -i 's/\\//g' $v2_json_file
 		fi
-		;;
+		;;	
 	esac
 }
 
@@ -252,8 +253,8 @@ start_rules() {
 		lancons="指定IP走代理,请到规则管理页面添加需要走代理的IP。"
 		cat /etc/storage/ss_lan_bip.sh | grep -v '^!' | grep -v "^$" >$lan_fp_ips
 	fi
-	rm -f $lan_gm_ips
-	cat /etc/storage/ss_lan_gmip.sh | grep -v '^!' | grep -v "^$" >$lan_gm_ips
+		rm -f $lan_gm_ips
+		cat /etc/storage/ss_lan_gmip.sh | grep -v '^!' | grep -v "^$" >$lan_gm_ips
 	dports=$(nvram get s_dports)
 	if [ $dports = "0" ]; then
 		proxyport=" "
@@ -314,7 +315,7 @@ start_redir_tcp() {
 	xray)
 		$bin -config $v2_json_file >/dev/null 2>&1 &
 		echo "$(date "+%Y-%m-%d %H:%M:%S") $($bin -version | head -1) 启动成功!" >>/tmp/ssrplus.log
-		;;
+		;;	
 	socks5)
 		for i in $(seq 1 $threads); do
 		lua /etc_ro/ss/gensocks.lua $GLOBAL_SERVER 1080 >/dev/null 2>&1 &
@@ -540,6 +541,9 @@ if rules; then
         logger -t "SS" "启动成功。"
         logger -t "SS" "内网IP控制为:$lancons"
         nvram set check_mode=0
+        if [ "$pppoemwan" -ne 0 ]; then
+        /usr/bin/detect.sh
+        fi
 }
 
 # ================================= 关闭SS ===============================
@@ -560,6 +564,9 @@ ssp_close() {
 	fi
 	clear_iptable
 	/sbin/restart_dhcpd
+	if [ "$pppoemwan" -ne 0 ]; then
+        /usr/bin/detect.sh
+        fi
 }
 
 
