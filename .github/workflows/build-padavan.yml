@@ -6,7 +6,7 @@ on:
     inputs:
       production:
         description: 设置编译的固件型号,空格分隔.
-        default: "MI-R4A"
+        default: "PSG1218"
         required: false
       release:
         description: "是否需要发布到Release? (不发布也可以到Artifacts下载)"
@@ -14,7 +14,7 @@ on:
         required: false
         
 env:                      # 环境变量
-  MHZ: 1120               # CPU超频频率 必须为20的倍数
+  MHZ: 620               # CPU超频频率 必须为20的倍数
 
 jobs:
   build:
@@ -132,7 +132,7 @@ jobs:
         sed -i '/CONFIG_FIRMWARE_INCLUDE_SRELAY/d' .config #删除配置项SRELAY
         sed -i '/CONFIG_FIRMWARE_INCLUDE_NPC/d' .config #删除配置项NPC
         sed -i '/CONFIG_FIRMWARE_INCLUDE_KUMASOCKS/d' .config #删除配置项KUMASOCKS
-        sed -i '/CONFIG_FIRMWARE_CPU_900MHZ/d' .config #删除配置项超频900MHz
+        sed -i '/CONFIG_FIRMWARE_CPU_600MHZ/d' .config #删除配置项超频900MHz
         sed -i 's/CONFIG_FIRMWARE_INCLUDE_OPENSSL_EXE=n/CONFIG_FIRMWARE_INCLUDE_OPENSSL_EXE=y/g' .config
         ######################################################################
         #以下选项是定义你需要的功能（y=集成,n=忽略），重新写入到.config文件
@@ -143,12 +143,12 @@ jobs:
         echo "CONFIG_FIRMWARE_INCLUDE_DNSFORWARDER=n" >> .config #DNSFORWARDER
         echo "CONFIG_FIRMWARE_INCLUDE_TUNSAFE=n" >> .config #TUNSAFE
         echo "CONFIG_FIRMWARE_INCLUDE_SRELAY=n" >> .config #可以不集成
-        echo "CONFIG_FIRMWARE_CPU_900MHZ=y" >> .config #开启超频，仅MT7621可用
+        echo "CONFIG_FIRMWARE_CPU_600MHZ=y" >> .config #开启超频，仅MT7621可用
         ##科学上网## 
         echo "CONFIG_FIRMWARE_INCLUDE_SHADOWSOCKS=y" >> .config #科学上网插件，选择n后全部有关插件都不集成
         echo "CONFIG_FIRMWARE_INCLUDE_SSOBFS=y" >> .config # simple-obfs混淆插件
         echo "CONFIG_FIRMWARE_INCLUDE_V2RAY=n" >> .config #集成v2ray执行文件（3.6M左右)，如果不集成，会从网上下载下来执行，不影响正常使用
-        echo "CONFIG_FIRMWARE_INCLUDE_XRAY=y" >> .config #集成xray执行文件（3.6M左右)，如果不集成，会从网上下载下来执行，不影响正常使用
+        echo "CONFIG_FIRMWARE_INCLUDE_XRAY=n" >> .config #集成xray执行文件（3.6M左右)，如果不集成，会从网上下载下来执行，不影响正常使用
         echo "CONFIG_FIRMWARE_INCLUDE_TROJAN=n" >> .config #集成trojan执行文件(1.1M左右)，如果不集成，会从网上下载下来执行，不影响正常使用
         echo "CONFIG_FIRMWARE_INCLUDE_KUMASOCKS=n" >> .config #socks5服务端
         ##科学上网##
