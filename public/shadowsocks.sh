@@ -389,7 +389,6 @@ case "$run_mode" in
 		logger -st "SS" "开始处理gfwlist..."
 	;;
 	gfw)
-	        if [ $(nvram get pdnsd_enable) = 0 ]; then
 		dnsstr="$(nvram get tunnel_forward)"
 		dnsserver=$(echo "$dnsstr" | awk -F '#' '{print $1}')
 		#dnsport=$(echo "$dnsstr" | awk -F '#' '{print $2}')
@@ -398,7 +397,6 @@ case "$run_mode" in
 		dns2tcp -L"127.0.0.1#5353" -R"$dnsstr" >/dev/null 2>&1 &
 		pdnsd_enable_flag=0	
 		logger -st "SS" "开始处理gfwlist..."
-		fi
 		;;
 	oversea)
 		ipset add gfwlist $dnsserver 2>/dev/null
