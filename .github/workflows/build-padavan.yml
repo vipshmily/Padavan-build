@@ -92,6 +92,7 @@ jobs:
         else
         exit 2 
         fi
+        cp -f public/MI-R4A.config ${{ env.DIR }}/trunk/configs/templates
         cp -f public/ssr-monitor ${{ env.DIR }}/trunk/user/shadowsocks/scripts
         cp -f public/shadowsocks.sh ${{ env.DIR }}/trunk/user/shadowsocks/scripts
         cp -f public/adguardhome.sh ${{ env.DIR }}/trunk/user/adguardhome
