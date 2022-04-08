@@ -43,20 +43,20 @@ find_bin() {
 	ssr-local) ret="/usr/bin/ssr-local" ;;
 	ssr-server) ret="/usr/bin/ssr-server" ;;
 	v2ray) 
-		if [ -f "/usr/bin/v2ray" ]; then
-			ret="/usr/bin/v2ray" 
+		if [ -f "/tmp/v2ray" ]; then
+			ret="/tmp/v2ray" 
 		else
-			ret="/usr/bin/xray" 
+			ret="/tmp/xray" 
 		fi
 		;;
 	xray) 
-		if [ -f "/usr/bin/xray" ]; then
-			ret="/usr/bin/xray" 
+		if [ -f "/tmp/xray" ]; then
+			ret="/tmp/xray" 
 		else
-			ret="/usr/bin/v2ray"
+			ret="/tmp/v2ray"
 		fi
 		;;
-	trojan) ret="/usr/bin/trojan" ;;
+	trojan) ret="/tmp/trojan" ;;
 	socks5) ret="/usr/bin/ipt2socks" ;;
 	esac
 	echo $ret
@@ -81,31 +81,13 @@ local type=$stype
 		sed -i 's/\\//g' $config_file
 		;;
 	trojan)
-		tj_bin="/usr/bin/trojan"
-		if [ ! -f "$tj_bin" ]; then
 		if [ ! -f "/tmp/trojan" ]; then
-			curl -L -k -s -o /tmp/trojan --connect-timeout 10 --retry 3 https://cdn.jsdelivr.net/gh/vipshmily/OutSide/trojan
-			if [ ! -f "/tmp/trojan" ]; then
-				logger -t "SS" "trojan二进制文件下载失败，可能是地址失效或者网络异常！自动切换到备用下载！"
-				#curl -L -k -s -o /tmp/trojan --connect-timeout 10 --retry 3 https://bin.wololo.vercel.app/trojan
-				curl -L -k -s -o /tmp/trojan --connect-timeout 10 --retry 3 https://ghproxy.com/https://github.com/vipshmily/OutSide/blob/main/trojan
-				if [ ! -f "/tmp/trojan" ]; then
-					logger -t "SS" "trojan二进制文件备用下载失败！请自查网络！"
-					nvram set ss_enable=0
-					ssp_close
-				else
-					logger -t "SS" "trojan二进制文件备用下载成功"
-					chmod -R 777 /tmp/trojan
-					tj_bin="/tmp/trojan"
-				fi
-			else
-				logger -t "SS" "trojan二进制文件下载成功"
-				chmod -R 777 /tmp/trojan
-				tj_bin="/tmp/trojan"
-			fi
+			logger -t "SS" "trojan二进制文件下载失败，可能是地址失效或者网络异常！"
+			nvram set ss_enable=0
+			ssp_close
 		else
-			tj_bin="/tmp/trojan"		
-		fi
+			logger -t "SS" "trojan二进制文件下载成功或者已存在"
+			chmod -R 777 /tmp/trojan
 		fi
 		if [ "$2" = "0" ]; then
 		lua /etc_ro/ss/gentrojanconfig.lua $1 nat 1080 >$trojan_json_file
@@ -116,30 +98,13 @@ local type=$stype
 		fi
 		;;
 	v2ray)
-		v2_bin="/usr/bin/v2ray"
-		if [ ! -f "$v2_bin" ]; then
 		if [ ! -f "/tmp/v2ray" ]; then
-			curl -L -k -s -o /tmp/v2ray --connect-timeout 10 --retry 3 https://cdn.jsdelivr.net/gh/vipshmily/OutSide/xray
-			if [ ! -f "/tmp/v2ray" ]; then
-				logger -t "SS" "Xray二进制文件下载失败，可能是地址失效或者网络异常！自动切换到备用下载！"
-				curl -L -k -s -o /tmp/v2ray --connect-timeout 10 --retry 3 https://ghproxy.com/https://github.com/vipshmily/OutSide/blob/main/xray
-				if [ ! -f "/tmp/v2ray" ]; then
-					logger -t "SS" "Xray二进制文件备用下载失败！请自查网络！"
-					nvram set ss_enable=0
-					ssp_close
-				else
-					logger -t "SS" "Xray二进制文件备用下载成功"
-					chmod -R 777 /tmp/v2ray
-					v2_bin="/tmp/v2ray"
-				fi
-			else
-				logger -t "SS" "Xray二进制文件下载成功"
-				chmod -R 777 /tmp/v2ray
-				v2_bin="/tmp/v2ray"
-			fi
+			logger -t "SS" "xray二进制文件下载失败，可能是地址失效或者网络异常！"
+			nvram set ss_enable=0
+			ssp_close
 		else
-				v2_bin="/tmp/v2ray"
-		fi
+			logger -t "SS" "xray二进制文件下载成功或者已存在"
+			chmod -R 777 /tmp/v2ray
 		fi
 		v2ray_enable=1
 		if [ "$2" = "1" ]; then
@@ -151,30 +116,13 @@ local type=$stype
 		fi
 		;;
 	xray)
-		v2_bin="/usr/bin/v2ray"
-		if [ ! -f "$v2_bin" ]; then
 		if [ ! -f "/tmp/v2ray" ]; then
-			curl -L -k -s -o /tmp/v2ray --connect-timeout 10 --retry 3 https://cdn.jsdelivr.net/gh/vipshmily/OutSide/xray
-			if [ ! -f "/tmp/v2ray" ]; then
-				logger -t "SS" "Xray二进制文件下载失败，可能是地址失效或者网络异常！自动切换到备用下载！"
-				curl -L -k -s -o /tmp/v2ray --connect-timeout 10 --retry 3 https://ghproxy.com/https://github.com/vipshmily/OutSide/blob/main/xray
-				if [ ! -f "/tmp/v2ray" ]; then
-					logger -t "SS" "Xray二进制文件备用下载失败！请自查网络！"
-					nvram set ss_enable=0
-					ssp_close
-				else
-					logger -t "SS" "Xray二进制文件备用下载成功"
-					chmod -R 777 /tmp/v2ray
-					v2_bin="/tmp/v2ray"
-				fi
-			else
-				logger -t "SS" "Xray二进制文件下载成功"
-				chmod -R 777 /tmp/v2ray
-				v2_bin="/tmp/v2ray"
-			fi
+			logger -t "SS" "xray二进制文件下载失败，可能是地址失效或者网络异常！"
+			nvram set ss_enable=0
+			ssp_close
 		else
-				v2_bin="/tmp/v2ray"
-		fi
+			logger -t "SS" "xray二进制文件下载成功或者已存在"
+			chmod -R 777 /tmp/v2ray
 		fi
 		v2ray_enable=1
 		if [ "$2" = "1" ]; then
@@ -197,6 +145,24 @@ get_arg_out() {
 }
 
 start_rules() {
+        local stype=$(nvram get d_type)
+	case "$stype" in
+	trojan)
+		if [ ! -f "/tmp/trojan" ];then
+			curl -L -k -s -o /tmp/trojan --connect-timeout 10 --retry 3 https://cdn.jsdelivr.net/gh/vipshmily/OutSide/trojan
+		fi
+		;;
+	v2ray)
+		if [ ! -f "/tmp/v2ray" ];then
+			curl -L -k -s -o /tmp/v2ray --connect-timeout 10 --retry 3 https://cdn.jsdelivr.net/gh/vipshmily/OutSide/xray
+		fi
+		;;
+	xray)
+		if [ ! -f "/tmp/v2ray" ];then
+			curl -L -k -s -o /tmp/v2ray --connect-timeout 10 --retry 3 https://cdn.jsdelivr.net/gh/vipshmily/OutSide/xray
+		fi
+		;;
+	esac
     logger -t "SS" "正在添加防火墙规则..."
 	lua /etc_ro/ss/getconfig.lua $GLOBAL_SERVER > /tmp/server.txt
 	server=`cat /tmp/server.txt` 
