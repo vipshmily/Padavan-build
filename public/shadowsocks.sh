@@ -43,20 +43,20 @@ find_bin() {
 	ssr-local) ret="/usr/bin/ssr-local" ;;
 	ssr-server) ret="/usr/bin/ssr-server" ;;
 	v2ray) 
-		if [ -f "/tmp/v2ray" ]; then
-			ret="/tmp/v2ray" 
+		if [ -f "/usr/bin/v2ray" ]; then
+			ret="/usr/bin/v2ray" 
 		else
-			ret="/tmp/xray" 
+			ret="/usr/bin/xray" 
 		fi
 		;;
 	xray) 
-		if [ -f "/tmp/xray" ]; then
-			ret="/tmp/xray" 
+		if [ -f "/usr/bin/xray" ]; then
+			ret="/usr/bin/xray" 
 		else
-			ret="/tmp/v2ray"
+			ret="/usr/bin/v2ray"
 		fi
 		;;
-	trojan) ret="/tmp/trojan" ;;
+	trojan) ret="/usr/bin/trojan" ;;
 	socks5) ret="/usr/bin/ipt2socks" ;;
 	esac
 	echo $ret
@@ -81,14 +81,7 @@ local type=$stype
 		sed -i 's/\\//g' $config_file
 		;;
 	trojan)
-		if [ ! -f "/tmp/trojan" ]; then
-			logger -t "SS" "trojan二进制文件下载失败，可能是地址失效或者网络异常！"
-			nvram set ss_enable=0
-			ssp_close
-		else
-			logger -t "SS" "trojan二进制文件下载成功或者已存在"
-			chmod -R 777 /tmp/trojan
-		fi
+		tj_bin="/usr/bin/trojan"
 		if [ "$2" = "0" ]; then
 		lua /etc_ro/ss/gentrojanconfig.lua $1 nat 1080 >$trojan_json_file
 		sed -i 's/\\//g' $trojan_json_file
@@ -98,14 +91,7 @@ local type=$stype
 		fi
 		;;
 	v2ray)
-		if [ ! -f "/tmp/v2ray" ]; then
-			logger -t "SS" "xray二进制文件下载失败，可能是地址失效或者网络异常！"
-			nvram set ss_enable=0
-			ssp_close
-		else
-			logger -t "SS" "xray二进制文件下载成功或者已存在"
-			chmod -R 777 /tmp/v2ray
-		fi
+		v2_bin="/usr/bin/v2ray"
 		v2ray_enable=1
 		if [ "$2" = "1" ]; then
 		lua /etc_ro/ss/genv2config.lua $1 udp 1080 >/tmp/v2-ssr-reudp.json
@@ -116,14 +102,7 @@ local type=$stype
 		fi
 		;;
 	xray)
-		if [ ! -f "/tmp/v2ray" ]; then
-			logger -t "SS" "xray二进制文件下载失败，可能是地址失效或者网络异常！"
-			nvram set ss_enable=0
-			ssp_close
-		else
-			logger -t "SS" "xray二进制文件下载成功或者已存在"
-			chmod -R 777 /tmp/v2ray
-		fi
+		v2_bin="/usr/bin/v2ray"
 		v2ray_enable=1
 		if [ "$2" = "1" ]; then
 		lua /etc_ro/ss/genxrayconfig.lua $1 udp 1080 >/tmp/v2-ssr-reudp.json
@@ -145,24 +124,6 @@ get_arg_out() {
 }
 
 start_rules() {
-        local stype=$(nvram get d_type)
-	case "$stype" in
-	trojan)
-		if [ ! -f "/tmp/trojan" ];then
-			curl -L -k -s -o /tmp/trojan --connect-timeout 10 --retry 3 https://cdn.jsdelivr.net/gh/vipshmily/OutSide/trojan
-		fi
-		;;
-	v2ray)
-		if [ ! -f "/tmp/v2ray" ];then
-			curl -L -k -s -o /tmp/v2ray --connect-timeout 10 --retry 3 https://cdn.jsdelivr.net/gh/vipshmily/OutSide/xray
-		fi
-		;;
-	xray)
-		if [ ! -f "/tmp/v2ray" ];then
-			curl -L -k -s -o /tmp/v2ray --connect-timeout 10 --retry 3 https://cdn.jsdelivr.net/gh/vipshmily/OutSide/xray
-		fi
-		;;
-	esac
     logger -t "SS" "正在添加防火墙规则..."
 	lua /etc_ro/ss/getconfig.lua $GLOBAL_SERVER > /tmp/server.txt
 	server=`cat /tmp/server.txt` 
@@ -355,7 +316,6 @@ case "$run_mode" in
 		logger -st "SS" "开始处理gfwlist..."
 	;;
 	gfw)
-	if [ $(nvram get pdnsd_enable) = 0 ]; then
 		dnsstr="$(nvram get tunnel_forward)"
 		dnsserver=$(echo "$dnsstr" | awk -F '#' '{print $1}')
 		#dnsport=$(echo "$dnsstr" | awk -F '#' '{print $2}')
@@ -364,7 +324,6 @@ case "$run_mode" in
 		dns2tcp -L"127.0.0.1#5353" -R"$dnsstr" >/dev/null 2>&1 &
 		pdnsd_enable_flag=0	
 		logger -st "SS" "开始处理gfwlist..."
-	fi
 		;;
 	oversea)
 		ipset add gfwlist $dnsserver 2>/dev/null
@@ -551,7 +510,7 @@ clear_iptable()
 kill_process() {
 	v2ray_process=$(pidof v2ray)
 	if [ -n "$v2ray_process" ]; then
-		logger -t "SS" "关闭Xray进程..."
+		logger -t "SS" "关闭xray进程..."
 		killall v2ray >/dev/null 2>&1
 		kill -9 "$v2ray_process" >/dev/null 2>&1
 	fi
