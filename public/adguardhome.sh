@@ -152,7 +152,7 @@ start_adg(){
     mkdir -p /tmp/AdGuardHome
 	mkdir -p /etc/storage/AdGuardHome
 	if [ ! -f "/tmp/AdGuardHome/AdGuardHome" ]; then
-	cp /usr/bin/AdGuardHome /tmp/AdGuardHome/AdGuardHome
+	dl_adg
 	fi
 	getconfig
 	change_dns
