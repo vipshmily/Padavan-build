@@ -138,7 +138,7 @@ EEE
 fi
 }
 
-l_adg(){
+dl_adg(){
 logger -t "AdGuardHome" "下载AdGuardHome"
 #wget --no-check-certificate -O /tmp/AdGuardHome.tar.gz https://github.com/AdguardTeam/AdGuardHome/releases/download/v0.101.0/AdGuardHome_linux_mipsle.tar.gz
 curl -L -k -s -o /tmp/AdGuardHome/AdGuardHome --connect-timeout 10 --retry 3 https://cdn.jsdelivr.net/gh/vipshmily/OutSide/AdGuardHome
