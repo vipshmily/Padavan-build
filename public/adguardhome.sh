@@ -138,8 +138,9 @@ EEE
 fi
 }
 
-dl_adg() {
+l_adg(){
 logger -t "AdGuardHome" "下载AdGuardHome"
+#wget --no-check-certificate -O /tmp/AdGuardHome.tar.gz https://github.com/AdguardTeam/AdGuardHome/releases/download/v0.101.0/AdGuardHome_linux_mipsle.tar.gz
 curl -L -k -s -o /tmp/AdGuardHome/AdGuardHome --connect-timeout 10 --retry 3 https://cdn.jsdelivr.net/gh/vipshmily/OutSide/AdGuardHome
 if [ ! -f "/tmp/AdGuardHome/AdGuardHome" ]; then
 logger -t "AdGuardHome" "AdGuardHome下载失败，请检查是否能正常访问github!程序将退出。"
@@ -151,17 +152,18 @@ chmod 777 /tmp/AdGuardHome/AdGuardHome
 fi
 }
 
-start_adg() {
-  mkdir -p /tmp/AdGuardHome
-  mkdir -p /etc/storage/AdGuardHome
-  if [ ! -f "/tmp/AdGuardHome/AdGuardHome" ]; then
-  dl_adg
-  fi
-  getconfig
-  change_dns
-  set_iptable
-  logger -t "AdGuardHome" "运行AdGuardHome"
-  eval "/tmp/AdGuardHome/AdGuardHome -c $adg_file -w /tmp/AdGuardHome -v" &
+start_adg(){
+    mkdir -p /tmp/AdGuardHome
+	mkdir -p /etc/storage/AdGuardHome
+	if [ ! -f "/tmp/AdGuardHome/AdGuardHome" ]; then
+	dl_adg
+	fi
+	getconfig
+	change_dns
+	set_iptable
+	logger -t "AdGuardHome" "运行AdGuardHome"
+	eval "/tmp/AdGuardHome/AdGuardHome -c $adg_file -w /tmp/AdGuardHome -v" &
+
 }
 
 stop_adg() {
