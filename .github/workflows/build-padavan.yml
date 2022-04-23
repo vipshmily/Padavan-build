@@ -6,16 +6,13 @@ on:
     inputs:
       production:
         description: 设置编译的固件型号,空格分隔.
-        default: "NETGEAR-BZV"
+        default: "R7450"
         required: false
       release:
         description: "是否需要发布到Release? (不发布也可以到Artifacts下载)"
         default: 'yes'
         required: false
         
-env:                      # 环境变量
-  MHZ: 1100               # CPU超频频率 必须为20的倍数，开启超频需开启95行超频开关
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -37,7 +34,7 @@ jobs:
         VERSION=$(TZ='Asia/Shanghai' date +%Y.%m.%d-%H%M)
         echo "VERSION=$VERSION" >> $GITHUB_ENV
         # $GITHUB_ENV变量必须要在下一个流程才生效
-        echo "DIR=/opt/Padavan-KVR" >> $GITHUB_ENV
+        echo "DIR=/opt/padavan-4.4" >> $GITHUB_ENV
         val1="${{ github.event.inputs.production }}"
         #val2=$(echo $val1 | sed 's/ /-/')
         echo "NAME=${val1}_$VERSION" >> $GITHUB_ENV
@@ -64,7 +61,7 @@ jobs:
         
     - name: Clone source code
       run: |
-        git clone --depth=1 https://github.com/vipshmily/Padavan-KVR.git ${{ env.DIR }}
+        git clone --depth=1 https://github.com/vipshmily/padavan-4.4.git ${{ env.DIR }}
         cd ${{ env.DIR }}/toolchain-mipsel
         sh dl_toolchain.sh
         mkdir -p /opt/images/
@@ -97,12 +94,6 @@ jobs:
         cwd=`pwd`
         CONFIG_TOOLCHAIN_DIR=${cwd//\//\\\/}\\/toolchain-mipsel
         cd ${{ env.DIR }}/trunk
-        echo "CPU超频到$MHZ"mhz
-        echo "修改CPU频率"
-        clock=`echo "obase=16 ; ibase=10 ; (((($MHZ/20)-1)*16+2))" | bc`
-        echo "16进制$clock"
-        sed -i "554,555s:0xff:0x7ff:g" ${{ env.DIR }}/trunk/linux-3.4.x/arch/mips/rt2880/init.c
-        sed -i "554,556s:0xc2:0x$clock:g" ${{ env.DIR }}/trunk/linux-3.4.x/arch/mips/rt2880/init.c
         for m in $TNAME;
         do
         if [ ! -f configs/templates/$m.config ] ; then
@@ -131,7 +122,6 @@ jobs:
         sed -i '/CONFIG_FIRMWARE_INCLUDE_SRELAY/d' .config #删除配置项SRELAY
         sed -i '/CONFIG_FIRMWARE_INCLUDE_NPC/d' .config #删除配置项NPC
         sed -i '/CONFIG_FIRMWARE_INCLUDE_KUMASOCKS/d' .config #删除配置项KUMASOCKS
-        sed -i '/CONFIG_FIRMWARE_CPU_900MHZ/d' .config #删除配置项超频900MHz
         sed -i 's/CONFIG_FIRMWARE_INCLUDE_OPENSSL_EXE=n/CONFIG_FIRMWARE_INCLUDE_OPENSSL_EXE=y/g' .config
         ######################################################################
         #以下选项是定义你需要的功能（y=集成,n=忽略），重新写入到.config文件
@@ -142,10 +132,9 @@ jobs:
         echo "CONFIG_FIRMWARE_INCLUDE_DNSFORWARDER=n" >> .config #DNSFORWARDER
         echo "CONFIG_FIRMWARE_INCLUDE_TUNSAFE=n" >> .config #TUNSAFE
         echo "CONFIG_FIRMWARE_INCLUDE_SRELAY=n" >> .config #可以不集成
-        echo "CONFIG_FIRMWARE_CPU_900MHZ=y" >> .config #开启超频，仅MT7621可用
         ##科学上网## 
         echo "CONFIG_FIRMWARE_INCLUDE_SHADOWSOCKS=y" >> .config #科学上网插件，选择n后全部有关插件都不集成
-        echo "CONFIG_FIRMWARE_INCLUDE_SSOBFS=y" >> .config # simple-obfs混淆插件
+        echo "CONFIG_FIRMWARE_INCLUDE_SSOBFS=n" >> .config # simple-obfs混淆插件
         echo "CONFIG_FIRMWARE_INCLUDE_V2RAY=n" >> .config #集成v2ray执行文件（3.6M左右)，如果不集成，会从网上下载下来执行，不影响正常使用
         echo "CONFIG_FIRMWARE_INCLUDE_XRAY=y" >> .config #集成xray执行文件（3.6M左右)，如果不集成，会从网上下载下来执行，不影响正常使用
         echo "CONFIG_FIRMWARE_INCLUDE_TROJAN=y" >> .config #集成trojan执行文件(1.1M左右)，如果不集成，会从网上下载下来执行，不影响正常使用
@@ -175,11 +164,18 @@ jobs:
         
         ##内网穿透服务##
         echo "CONFIG_FIRMWARE_INCLUDE_ZEROTIER=n" >> .config #zerotier ~1.3M
-        echo "CONFIG_FIRMWARE_INCLUDE_ALIDDNS=n" >> .config #阿里DDNS
+        echo "CONFIG_FIRMWARE_INCLUDE_ALIDDNS=y" >> .config #阿里DDNS
         echo "CONFIG_FIRMWARE_INCLUDE_FRPC=n" >> .config #内网穿透FRPC
         echo "CONFIG_FIRMWARE_INCLUDE_FRPS=n" >> .config #内网穿透FRPS
+        echo "CONFIG_FIRMWARE_INCLUDE_DDNSTO=y" >> .config #ddnsto  ~0.5M
         echo "CONFIG_FIRMWARE_INCLUDE_NPC=n" >> .config #npc
         ##内网穿透服务##
+        echo "CONFIG_FIRMWARE_INCLUDE_ALDRIVER=y" >> .config #ALDRIVER  ~3m
+        echo "CONFIG_FIRMWARE_INCLUDE_SQM=y" >> .config #SQM
+        echo "CONFIG_FIRMWARE_INCLUDE_WIREGUARD=y" >>.config #wireguard 10k
+        #CPU超频
+        echo "CONFIG_FIRMWARE_INCLUDE_OC=y" >> .config #CPU超频开关
+        echo 'CONFIG_FIRMWARE_MT7621_OC="0x372"' >> .config #此处填写对应频率的十六进制：1000Mhz=0x312 1100Mhz=0x362 1120Mhz=0x372 1200Mhz=0x3B2
         #########################################################################################
         # 自定义添加其它功能请参考源码configs/templates/目录下的config文件。按照上面的格式添加即可
         # 格式如下：
