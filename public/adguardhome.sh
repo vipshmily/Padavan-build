@@ -115,6 +115,10 @@ filters:
   url: https://anti-ad.net/easylist.txt
   name: anti-AD
   id: 3
+- enabled: true
+  url: https://www.malwaredomainlist.com/hostslist/hosts.txt
+  name: MalwareDomainList.com Hosts List
+  id: 4
 user_rules: []
 dhcp:
   enabled: false
