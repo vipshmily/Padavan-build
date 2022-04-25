@@ -92,12 +92,12 @@ jobs:
         else
         exit 2 
         fi
-        if [ -f public/user.Makefile ] ; then
+        /*if [ -f public/user.Makefile ] ; then
         mv -f public/user.Makefile ${{ env.DIR }}/trunk/user/Makefile
         echo "Makefile file copy success"
         else
         exit 3 
-        fi
+        fi*/
         cp -f public/ssr-monitor ${{ env.DIR }}/trunk/user/shadowsocks/scripts
         cp -f public/shadowsocks.sh ${{ env.DIR }}/trunk/user/shadowsocks/scripts
         cp -f public/adguardhome.sh ${{ env.DIR }}/trunk/user/adguardhome
@@ -155,7 +155,7 @@ jobs:
         echo "CONFIG_FIRMWARE_INCLUDE_SSOBFS=y" >> .config # simple-obfs混淆插件
         echo "CONFIG_FIRMWARE_INCLUDE_V2RAY=n" >> .config #集成v2ray执行文件（3.6M左右)，如果不集成，会从网上下载下来执行，不影响正常使用
         echo "CONFIG_FIRMWARE_INCLUDE_XRAY=y" >> .config #集成xray执行文件（3.6M左右)，如果不集成，会从网上下载下来执行，不影响正常使用
-        echo "CONFIG_FIRMWARE_INCLUDE_TROJAN=n" >> .config #集成trojan执行文件(1.1M左右)，如果不集成，会从网上下载下来执行，不影响正常使用
+        echo "CONFIG_FIRMWARE_INCLUDE_TROJAN=y" >> .config #集成trojan执行文件(1.1M左右)，如果不集成，会从网上下载下来执行，不影响正常使用
         echo "CONFIG_FIRMWARE_INCLUDE_KUMASOCKS=n" >> .config #socks5服务端
         ##科学上网##
         
