@@ -182,17 +182,8 @@ jobs:
         echo "CONFIG_FIRMWARE_INCLUDE_DDNSTO=n" >> .config #ddnsto  ~0.5M
         echo "CONFIG_FIRMWARE_INCLUDE_WIREGUARD=n" >>.config #wireguard 10k
         ##内网穿透服务##
-        echo "CONFIG_FIRMWARE_INCLUDE_ALDRIVER=y" >> .config #ALDRIVER  ~3m
+        echo "CONFIG_FIRMWARE_INCLUDE_ALDRIVER=n" >> .config #ALDRIVER  ~3m
         echo "CONFIG_FIRMWARE_INCLUDE_SQM=y" >> .config #SQM
-         
-          # 更新v2ray版本
-          v2_version=`curl --silent "https://api.github.com/repos/v2fly/v2ray-core/releases/latest" | jq -r '.tag_name | sub("^v";"")'`
-          sed -i "s/V2ray_VERSION := .*/V2ray_VERSION := $v2_version/g" ${{ env.DIR }}/trunk/user/v2ray/Makefile
-          sed -i 's|codeload.github.com/v2ray|codeload.github.com/v2fly|g' ${{ env.DIR }}/trunk/user/v2ray/Makefile
-          # 更新xray版本
-          xray_version=`curl --silent "https://api.github.com/repos/XTLS/Xray-core/releases/latest" | jq -r '.tag_name | sub("^v";"")'`
-          sed -i "s/Xray_VERSION := .*/Xray_VERSION := $xray_version/g" ${{ env.DIR }}/trunk/user/xray/Makefile
-          sed -i 's|codeload.github.com/xray|codeload.github.com/XTLS|g' ${{ env.DIR }}/trunk/user/xray/Makefile
         #########################################################################################
         # 自定义添加其它功能请参考源码configs/templates/目录下的config文件。按照上面的格式添加即可
         # 格式如下：
