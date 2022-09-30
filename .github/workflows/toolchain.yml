@@ -6,7 +6,7 @@ on:
 jobs:
   build:
     name: build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v3
       - name: Prepare environment
@@ -22,15 +22,8 @@ jobs:
           ./build_toolchain
           cd toolchain-4.4.x
           tar cJf ../mipsel-linux-uclibc.tar.xz .
-      - name: Upload toolchain to artifact
+      - name: Upload toolchain
         uses: actions/upload-artifact@v3
         with:
           name: toolchain
           path: toolchain-mipsel/mipsel-linux-uclibc.tar.xz
-      - name: Upload toolchain to artifact
-        uses: svenstaro/upload-release-action@2.2.0
-        with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: toolchain-mipsel/mipsel-linux-uclibc.tar.xz
-          tag: toolchain
-          overwrite: true
