@@ -22,14 +22,14 @@ jobs:
     
     steps:
     - name: Checkout
-      uses: actions/checkout@main
+    - uses: actions/checkout@v3
     - uses: actions/setup-go@v3
-        with:
-          go-version: '^1.18.6'
-      - run: |
+      with:
+          go-version: '^1.19.1'
+    - run: |
           # https://github.com/actions/setup-go/issues/107
           echo "${GOROOT}/bin" >> $GITHUB_PATH
-      
+           
     - name: 生成版本号
       run: |
         whoami
