@@ -21,13 +21,9 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-    - uses: actions/checkout@v3
-    - uses: actions/setup-go@v3
-      with:
-          go-version: '^1.18.6'
-    - run: |
-          # https://github.com/actions/setup-go/issues/107
-          echo "${GOROOT}/bin" >> $GITHUB_PATH
+    - name: Checkout
+      uses: actions/checkout@main
+      
     - name: 生成版本号
       run: |
         whoami
@@ -73,13 +69,13 @@ jobs:
         sh dl_toolchain.sh
         mkdir -p /opt/images/
         
-    #- id: vars
-      #run: |
-        #echo ::set-output name=go_version::$(curl -s https://raw.githubusercontent.com/actions/go-versions/main/versions-manifest.json | grep -oE '"version": "[0-9]{1}.[0-9]{1,}(.[0-9]{1,})?"' | head -1 | cut -d':' -f2 | sed 's/ //g; s/"//g')
-    #- name: Install Go
-      #uses: actions/setup-go@v2
-      #with:
-        #go-version: ${{ steps.vars.outputs.go_version }}
+    - id: vars
+      run: |
+        echo ::set-output name=go_version::$(curl -s https://raw.githubusercontent.com/actions/go-versions/main/versions-manifest.json | grep -oE '"version": "[0-9]{1}.[0-9]{1,}(.[0-9]{1,})?"' | head -1 | cut -d':' -f2 | sed 's/ //g; s/"//g')
+    - name: Install Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: ${{ steps.vars.outputs.go_version }}
         
     - name: Build Firmware
       env:
