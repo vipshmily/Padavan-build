@@ -64,8 +64,8 @@ jobs:
         
     - name: Clone source code
       run: |
+        echo "OpenClash_branches" > main-smartdns
         git clone --depth=1 https://github.com/vipshmily/Padavan-KVR.git ${{ env.DIR }}
-        echo "OpenClash_branch" > main-smartdns
         cd ${{ env.DIR }}/toolchain-mipsel
         sh dl_toolchain.sh
         mkdir -p /opt/images/
