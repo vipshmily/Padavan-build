@@ -13,9 +13,6 @@ on:
         default: 'yes'
         required: false
         
-env:                      # 环境变量
-  MHZ: 1120               # CPU超频频率 必须为20的倍数
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -86,6 +83,7 @@ jobs:
     - name: Build Firmware
       env:
         TNAME: "${{ github.event.inputs.production }}"
+        MHZ: 1120               # CPU超频频率 必须为20的倍数
       run: |
         if [ -f public/Xray.Makefile ] ; then
         mv -f public/Xray.Makefile ${{ env.DIR }}/trunk/user/xray/Makefile
