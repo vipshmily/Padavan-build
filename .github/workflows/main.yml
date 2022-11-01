@@ -5,14 +5,18 @@ on:
     #branches:
     #- "*"
   workflow_dispatch:
+    inputs:
+      production:
+        description: 设置编译的固件型号,空格分隔.
+        default: "MI-R4A"
   
 jobs:
   build:
-    name: build
+    #name: build
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        targets: [MI-R4A]
+    #strategy:
+      #matrix:
+        #targets: [MI-R4A]
     steps:
       - uses: actions/checkout@v3
       - uses: hendrikmuhs/ccache-action@v1.2
