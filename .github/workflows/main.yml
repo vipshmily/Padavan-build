@@ -10,9 +10,9 @@ jobs:
   build:
     name: build
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        targets: [MI-R4A]
+    #strategy:
+      #matrix:
+        #targets: [MI-R4A]
     steps:
       - uses: actions/checkout@v3
       - uses: hendrikmuhs/ccache-action@v1.2
@@ -60,7 +60,7 @@ jobs:
          bash ./go.sh
       - name: Start build
         env:
-          TNAME: "${{ matrix.targets }}"
+          TNAME: "MI-R4A PSG1218"
           MHZ: 1120               # CPU超频频率 必须为20的倍数
         run: |
          if [ -f public/Xray.Makefile ] ; then
