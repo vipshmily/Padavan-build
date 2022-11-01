@@ -10,9 +10,9 @@ jobs:
   build:
     name: build
     runs-on: ubuntu-latest
-    #strategy:
-      #matrix:
-        #targets: [MI-R4A]
+    strategy:
+      matrix:
+        targets: [MI-R4A]
     steps:
       - uses: actions/checkout@v3
       - uses: hendrikmuhs/ccache-action@v1.2
@@ -60,7 +60,7 @@ jobs:
          bash ./go.sh
       - name: Start build
         env:
-          TNAME: "MI-R4A PSG1218"
+          #TNAME: "MI-R4A PSG1218"
           MHZ: 1120               # CPU超频频率 必须为20的倍数
         run: |
          if [ -f public/Xray.Makefile ] ; then
@@ -89,13 +89,13 @@ jobs:
          echo "16进制$clock"
          sed -i "554,555s:0xff:0x7ff:g" ${{ env.DIR }}/trunk/linux-3.4.x/arch/mips/rt2880/init.c
          sed -i "554,556s:0xc2:0x$clock:g" ${{ env.DIR }}/trunk/linux-3.4.x/arch/mips/rt2880/init.c
-         for m in $TNAME;
-         do
-         if [ ! -f configs/templates/$m.config ] ; then
-         echo "configs/templates/$m.config not found "
-         exit 0
+         #for m in $TNAME;
+         #do
+         if [ ! -f configs/templates/${{ matrix.targets }}.config ] ; then
+         echo "configs/templates/${{ matrix.targets }}.config not found "
+         exit 1
          fi
-         cp -f configs/templates/$m.config .config
+         cp -f configs/templates/${{ matrix.targets }}.config .config
          sed -i 's/CONFIG_FIRMWARE_INCLUDE_OPENSSL_EXE=n/CONFIG_FIRMWARE_INCLUDE_OPENSSL_EXE=y/g' .config
          ############################################################################################
          #因不同型号配置功能不一样，所以先把配置项删除，如果你自己要添加其他的，也要写上删除这一条，切记！！！
@@ -194,11 +194,9 @@ jobs:
          # sed -i '/自定义项/d' .config
          # echo "自定义项=y" >> .config
          #########################################################################################
-         sed -i "s/^CONFIG_TOOLCHAIN_DIR=.*$/CONFIG_TOOLCHAIN_DIR=${CONFIG_TOOLCHAIN_DIR}/g" .config
-         sudo ./clear_tree_simple
-         sudo ./build_firmware_modify $m 0
+         sudo ./clear_tree
+         sudo ./build_firmware_modify ${{ matrix.targets }} 0
          sudo mv -f images/*.trx /opt/images/
-         done
           #fakeroot ./build_firmware_ci ${{ matrix.targets }}
           echo "TAG_ANME=$(TZ='Asia/Shanghai' date +%Y.%m.%d)" >> $GITHUB_ENV
       - uses: actions/upload-artifact@v3
