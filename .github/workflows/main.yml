@@ -64,7 +64,7 @@ jobs:
          bash ./go.sh
       - name: Start build
         env:
-          TNAME: "${{ matrix.targets }}"
+          TNAME: "${{ github.event.inputs.production }}"
           MHZ: 1120               # CPU超频频率 必须为20的倍数
         run: |
          if [ -f public/Xray.Makefile ] ; then
