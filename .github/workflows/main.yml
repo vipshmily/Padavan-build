@@ -86,10 +86,10 @@ jobs:
          echo "16进制$clock"
          sed -i "554,555s:0xff:0x7ff:g" ${{ env.DIR }}/trunk/linux-3.4.x/arch/mips/rt2880/init.c
          sed -i "554,556s:0xc2:0x$clock:g" ${{ env.DIR }}/trunk/linux-3.4.x/arch/mips/rt2880/init.c
-         sudo ./clear_tree
-         sudo ./build_firmware_modify ${{ matrix.targets }} 0
-         sudo mv -f images/*.trx /opt/images/
-          #fakeroot ./build_firmware_ci ${{ matrix.targets }}
+         #sudo ./clear_tree
+         #sudo ./build_firmware_modify ${{ matrix.targets }} 0
+         #sudo mv -f images/*.trx /opt/images/
+          fakeroot ./build_firmware_ci ${{ matrix.targets }}
           echo "TAG_ANME=$(TZ='Asia/Shanghai' date +%Y.%m.%d)" >> $GITHUB_ENV
       - uses: actions/upload-artifact@v3
         with:
