@@ -80,8 +80,8 @@ jobs:
          #cp -f public/shadowsocks.sh ${{ env.DIR }}/trunk/user/shadowsocks/scripts
          cp -f public/adguardhome.sh ${{ env.DIR }}/trunk/user/adguardhome
          cp -f public/build_firmware_modify ${{ env.DIR }}/trunk
-         cwd=`pwd`
-         CONFIG_TOOLCHAIN_DIR=${cwd//\//\\\/}\\/toolchain-mipsel
+         #cwd=`pwd`
+         #CONFIG_TOOLCHAIN_DIR=${cwd//\//\\\/}\\/toolchain-mipsel
          cd ${{ env.DIR }}/trunk
          echo "CPU超频到$MHZ"mhz
          echo "修改CPU频率"
