@@ -9,6 +9,11 @@ on:
       production:
         description: 设置编译的固件型号,空格分隔.
         default: "MI-R4A"
+        required: false
+      release:
+        description: "是否需要发布到Release? (不发布也可以到Artifacts下载)"
+        default: 'yes'
+        required: false
   
 jobs:
   build:
@@ -44,50 +49,116 @@ jobs:
             npm-feature-${{ hashFiles('package-lock.json') }}
             npm-feature-
             npm-
+            
+      - name: 生成版本号
+        run: |
+          whoami
+          id
+          echo 接收到的输入参数:
+          echo "${{ github.event.inputs.production }}"
+          echo "${{ github.event.inputs.release }}"
+          echo 
+          echo 当前目录:$(pwd)
+          # 版本号,用日期
+          VERSION=$(TZ='Asia/Shanghai' date +%Y.%m.%d-%H%M)
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          # $GITHUB_ENV变量必须要在下一个流程才生效
+          echo "DIR=/opt/Padavan-KVR" >> $GITHUB_ENV
+          val1="${{ github.event.inputs.production }}"
+          #val2=$(echo $val1 | sed 's/ /-/')
+          echo "NAME=${val1}_$VERSION" >> $GITHUB_ENV
+          echo "TAG=v$VERSION" >> $GITHUB_ENV
+          ip addr
+          
+      - name: 创建目录
+        run: |
+          echo ${{ env.NAME }}
+          echo ${{ env.TAG }}
+          sudo mkdir -m 777 -p ${{ env.DIR }}
+          sudo mkdir -m 777 -p /opt/images/
+          echo 开始编译时间 >> /opt/images/readme.txt
+          TZ='Asia/Shanghai'  date  '+%Y-%m-%d %H:%M:%S' >> /opt/images/readme.txt
+          
       - name: Prepare
         run: |
           sudo apt update
           sudo apt install libtool-bin gperf python3-docutils autopoint gettext ccache
-          # https://github.com/actions/setup-go/issues/107
-          echo "${GOROOT}/bin" >> $GITHUB_PATH
-          echo "DIR=/opt/Padavan-KVR" >> $GITHUB_ENV
+          
       - name: Clone source code
         run: |
-           git clone --depth=1 https://github.com/vipshmily/Padavan-KVR.git ${{ env.DIR }}
+           git clone --depth=1 https://github.com/vipshmily/Padavan-KVR.git ${{ env.DIR }}  > /dev/null
            cd ${{ env.DIR }}/toolchain-mipsel
-           sh dl_toolchain.sh
-           mkdir -p /opt/images/
+           sh dl_toolchain.sh > /dev/null
+           pwd
+           
       - name: Set golang
         run: |
          cp -f bashScripts/go.sh $(pwd)
          sudo chmod 777 ./go.sh
          bash ./go.sh
+         
       - name: Start build
-        env:
+        if: true
+        env: 
+          #用空格分隔型号,循环编译
           TNAME: "${{ github.event.inputs.production }}"
-          MHZ: 1120               # CPU超频频率 必须为20的倍数
         run: |
-         for m in $TNAME;
-         do
-         echo "::group::编译 ${m}"
-         cd ${{ env.DIR }}/trunk
-         sudo ./build_firmware_modify $m 0
-         sudo mv -f images/*.trx /opt/images/
-         echo "::endgroup::"
-         done
-         #fakeroot ./build_firmware_ci ${{ matrix.targets }}
-          echo "TAG_ANME=$(TZ='Asia/Shanghai' date +%Y.%m.%d)" >> $GITHUB_ENV
-      - uses: actions/upload-artifact@v3
+          if [ "$TNAME" == "DEBUG" ];then
+            exit 0
+          fi
+          for m in $TNAME;
+          do
+          echo "::group::编译 ${m}"
+          cd ${{ env.DIR }}/trunk
+          sudo ./clear_tree || echo 
+          sudo ./build_firmware_modify ${m}    > /dev/null
+          ls -l images
+          sudo mv -f images/*.trx /opt/images/
+          echo "::endgroup::"
+          done
+      
+      - name: 收集信息
+        if: true
+        run: |
+          cd /opt/images
+          #记录一个版本号
+          echo 完成编译时间 >> /opt/images/readme.txt
+          TZ='Asia/Shanghai'  date  '+%Y-%m-%d %H:%M:%S' >> /opt/images/readme.txt
+          echo  >> /opt/images/readme.txt
+          echo 编译版本 >> /opt/images/readme.txt
+          pushd ${{ env.DIR }}
+          git ls-remote --get-url origin >> /opt/images/readme.txt
+          git log -1 >> /opt/images/readme.txt
+          popd
+          echo  >> /opt/images/readme.txt
+          echo md5校验值 >> /opt/images/readme.txt
+          cd /opt/images
+          #为固件文件名加上日期
+          for i in *.trx
+          do
+          #echo org $i
+          mv -v "$i" "${i%.*}-${{ env.VERSION }}.trx"
+          done
+          #测试
+          md5sum *.trx >> /opt/images/readme.txt || echo
+          ls -l
+           
+      - name : 上传编译的固件Artifacts
+        uses: actions/upload-artifact@v3
+        if: true
         with:
-          name: images
-          path: /opt/images/*.trx
-      - uses: rickstaa/action-create-tag@v1
+          name: ${{ env.NAME }}
+          path: /opt/images
+        
+      - name: 发布到Release
+        if: ${{ github.event.inputs.release == 'yes' }}
+        uses: softprops/action-gh-release@v1
         with:
-          tag: ${{ env.TAG_ANME }}
-          force_push_tag: true
-      - uses: ncipollo/release-action@v1
-        with:
-          commit: ${{ github.sha }}
-          tag: ${{ env.TAG_ANME }}
-          artifacts: /opt/images/*.trx
-          allowUpdates: true
+          name: ${{ env.NAME }}
+          tag_name: ${{ env.TAG }}
+          body_path: /opt/images/readme.txt
+          draft: false
+          prerelease: false
+          files: /opt/images/*
+        env:
+           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
