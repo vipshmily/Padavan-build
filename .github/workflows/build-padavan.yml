@@ -16,17 +16,37 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    
     steps:
-    - name: Checkout
-      uses: actions/checkout@main
+    - uses: actions/checkout@v3
+    - uses: hendrikmuhs/ccache-action@v1.2
     - id: vars
       run: |
         echo ::set-output name=go_version::$(curl -s https://raw.githubusercontent.com/actions/go-versions/main/versions-manifest.json | grep -oE '"version": "[0-9]{1}.[0-9]{1,}(.[0-9]{1,})?"' | head -1 | cut -d':' -f2 | sed 's/ //g; s/"//g')
     - name: Install Go
-      uses: actions/setup-go@v2
+      uses: actions/setup-go@v3
       with:
         go-version: ${{ steps.vars.outputs.go_version }}
+        
+    - name: Cache node modules
+      id: cache-npm
+      uses: actions/cache@v3
+      env:
+          cache-name: cache-node-modules
+      with:
+           #npm cache files are stored in `~/.npm` on Linux/macOS
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+            ~/.npm
+          key: ${{ runner.os }}-go-v1-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
+            npm-feature-${{ hashFiles('package-lock.json') }}
+            npm-feature-
+            npm-
       
     - name: 生成版本号
       run: |
