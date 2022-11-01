@@ -204,7 +204,7 @@ jobs:
       - uses: actions/upload-artifact@v3
         with:
           name: images
-          path: trunk/images/*.trx
+          path: /opt/images/*.trx
       - uses: rickstaa/action-create-tag@v1
         with:
           tag: ${{ env.TAG_ANME }}
@@ -213,5 +213,5 @@ jobs:
         with:
           commit: ${{ github.sha }}
           tag: ${{ env.TAG_ANME }}
-          artifacts: trunk/images/*.trx
+          artifacts: /opt/images/*.trx
           allowUpdates: true
