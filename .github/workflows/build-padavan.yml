@@ -19,13 +19,9 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - uses: hendrikmuhs/ccache-action@v1.2
-    - id: vars
-      run: |
-        echo ::set-output name=go_version::$(curl -s https://raw.githubusercontent.com/actions/go-versions/main/versions-manifest.json | grep -oE '"version": "[0-9]{1}.[0-9]{1,}(.[0-9]{1,})?"' | head -1 | cut -d':' -f2 | sed 's/ //g; s/"//g')
-    - name: Install Go
-      uses: actions/setup-go@v3
+    - uses: actions/setup-go@v3
       with:
-        go-version: ${{ steps.vars.outputs.go_version }}
+          go-version: '^1.19.2'
         
     - name: Cache node modules
       id: cache-npm
@@ -77,15 +73,13 @@ jobs:
         echo 开始编译时间 >> /opt/images/readme.txt
         TZ='Asia/Shanghai'  date  '+%Y-%m-%d %H:%M:%S' >> /opt/images/readme.txt
         
-    - name: Initialization environment
-      env:
-        DEBIAN_FRONTEND: noninteractive
+    - name: Prepare environment
       run: |
-        sudo apt-get update
-        #sudo apt install libtool-bin gperf python3-docutils autopoint gettext ccache
-        sudo apt-get -y install unzip libtool-bin curl cmake gperf gawk flex bison nano xxd fakeroot \
-        cpio git python-docutils gettext automake autopoint texinfo build-essential help2man \
-        pkg-config zlib1g-dev libgmp3-dev libmpc-dev libmpfr-dev libncurses5-dev libltdl-dev wget
+          sudo apt update
+          sudo apt install libtool-bin gperf python3-docutils autopoint gettext ccache
+          #sudo apt-get -y install unzip libtool-bin curl cmake gperf gawk flex bison nano xxd fakeroot \
+          #cpio git python-docutils gettext automake autopoint texinfo build-essential help2man \
+          #pkg-config zlib1g-dev libgmp3-dev libmpc-dev libmpfr-dev libncurses5-dev libltdl-dev wget
         
     - name: Clone source code
       run: |
@@ -271,7 +265,7 @@ jobs:
         ls -l      
         
     - name : 上传编译的固件Artifacts
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       if: true
       with:
         name: ${{ env.NAME }}
