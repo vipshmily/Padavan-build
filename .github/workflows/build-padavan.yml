@@ -23,13 +23,9 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@main
-    - id: vars
-      run: |
-        echo ::set-output name=go_version::$(curl -s https://raw.githubusercontent.com/actions/go-versions/main/versions-manifest.json | grep -oE '"version": "[0-9]{1}.[0-9]{1,}(.[0-9]{1,})?"' | head -1 | cut -d':' -f2 | sed 's/ //g; s/"//g')
-    - name: Install Go
-      uses: actions/setup-go@v2
+    - uses: actions/setup-go@v3
       with:
-        go-version: ${{ steps.vars.outputs.go_version }}
+          go-version: '^1.19.2'
       
     - name: 生成版本号
       run: |
