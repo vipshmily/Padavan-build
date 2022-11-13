@@ -84,8 +84,8 @@ jobs:
     - name: Clone source code
       run: |
         git clone --depth=1 https://github.com/vipshmily/Padavan-KVR.git ${{ env.DIR }}
-        cd ${{ env.DIR }}/toolchain-mipsel
-        sh dl_toolchain.sh
+        #cd ${{ env.DIR }}/toolchain-mipsel
+        #sh dl_toolchain.sh
         mkdir -p /opt/images/
                 
     - name: Set golang
@@ -118,7 +118,7 @@ jobs:
         cp -f public/build_firmware_modify ${{ env.DIR }}/trunk
         cwd=`pwd`
         CONFIG_TOOLCHAIN_DIR=${cwd//\//\\\/}\\/toolchain-mipsel
-        cd ${{ env.DIR }}/trunk
+        make $m
         echo "CPU超频到$MHZ"mhz
         echo "修改CPU频率"
         clock=`echo "obase=16 ; ibase=10 ; (((($MHZ/20)-1)*16+2))" | bc`
