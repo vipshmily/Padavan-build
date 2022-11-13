@@ -115,10 +115,10 @@ jobs:
         #cp -f public/ssr-monitor ${{ env.DIR }}/trunk/user/shadowsocks/scripts
         #cp -f public/shadowsocks.sh ${{ env.DIR }}/trunk/user/shadowsocks/scripts
         cp -f public/adguardhome.sh ${{ env.DIR }}/trunk/user/adguardhome
-        #cp -f public/build_firmware_modify ${{ env.DIR }}/trunk
+        cp -f public/build_firmware_modify ${{ env.DIR }}/trunk
         cwd=`pwd`
         CONFIG_TOOLCHAIN_DIR=${cwd//\//\\\/}\\/toolchain-mipsel
-        make ${{ github.event.inputs.production }}
+        cd ${{ env.DIR }}/trunk
         echo "CPU超频到$MHZ"mhz
         echo "修改CPU频率"
         clock=`echo "obase=16 ; ibase=10 ; (((($MHZ/20)-1)*16+2))" | bc`
@@ -231,8 +231,8 @@ jobs:
         # echo "自定义项=y" >> .config
         #########################################################################################
         sed -i "s/^CONFIG_TOOLCHAIN_DIR=.*$/CONFIG_TOOLCHAIN_DIR=${CONFIG_TOOLCHAIN_DIR}/g" .config
-        #sudo ./clear_tree_simple
-        sudo ./configure $m 0
+        sudo ./clear_tree_simple
+        sudo ./build_firmware_modify $m 0
         sudo mv -f images/*.trx /opt/images/
         done
     - name: 收集信息
