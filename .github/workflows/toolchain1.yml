@@ -1,0 +1,46 @@
+name: toolchain
+
+on: 
+  workflow_dispatch:
+env:
+  src_dir: /opt/rt-n56u
+  build_dir: /opt/rt-n56u/toolchain-mipsel
+  toolchain_dir: /opt/rt-n56u/toolchain-mipsel/toolchain-3.4.x
+  src_git: https://github.com/vipshmily/Padavan-KVR.git
+jobs:
+  build:
+    name: build
+    runs-on: ubuntu-latest
+    if: github.event.repository.owner.id == github.event.sender.id
+    steps:
+      - uses: actions/checkout@v3
+      - name: Prepare environment
+        run: |
+          sudo apt update
+          sudo apt install unzip libtool-bin curl cmake gperf gawk flex bison nano xxd \
+            fakeroot kmod cpio git python3-docutils gettext automake autopoint \
+            texinfo build-essential help2man pkg-config zlib1g-dev libgmp3-dev \
+            libmpc-dev libmpfr-dev libncurses5-dev libltdl-dev wget libc-dev-bin
+      - name: Clone source code
+        run: |
+          git clone --depth=1 $src_git $src_dir
+      - name: Build toolchain
+        run: |
+          cd $build_dir
+          if [ ! -f build_toolchain ] ; then echo "build_toolchain.sh not found "; exit 1; fi
+          ./clean_toolchain
+          ./build_toolchain
+          cd $toolchain_dir
+          tar cJf ../mipsel-linux-uclibc-gcc10.tar.xz *
+      - name: Upload toolchain to artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: toolchain
+          path: ${{ env.build_dir }}/mipsel-linux-uclibc-gcc10.tar.xz
+      - name: Upload toolchain to artifact
+        uses: svenstaro/upload-release-action@2.3.0
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: ${{ env.build_dir }}/mipsel-linux-uclibc-gcc10.tar.xz
+          tag: toolchain
+          overwrite: true
