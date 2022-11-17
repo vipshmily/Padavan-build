@@ -26,10 +26,10 @@ jobs:
           git clone --depth=1 $src_git $src_dir
       - name: Build toolchain
         run: |
-          make $build_dir/build
+          cd $build_dir
           if [ ! -f build_toolchain ] ; then echo "build_toolchain.sh not found "; exit 1; fi
-          #./clean_toolchain
-          #./build_toolchain
+          ./clean_toolchain
+          ./build_toolchain
           cd $toolchain_dir
           tar cJf ../mipsel-linux-uclibc-gcc10.tar.xz *
       - name: Upload toolchain to artifact
