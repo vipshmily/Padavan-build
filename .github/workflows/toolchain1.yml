@@ -26,10 +26,9 @@ jobs:
           git clone --depth=1 $src_git $src_dir
       - name: Build toolchain
         run: |
-          cd $build_dir
+          make $build_dir/build
           if [ ! -f build_toolchain ] ; then echo "build_toolchain.sh not found "; exit 1; fi
-          make toolchain/build
-          ./clean_toolchain
+          #./clean_toolchain
           #./build_toolchain
           cd $toolchain_dir
           tar cJf ../mipsel-linux-uclibc-gcc10.tar.xz *
