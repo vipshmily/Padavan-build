@@ -41,8 +41,8 @@ jobs:
       - name: Upload toolchain to artifact
         uses: svenstaro/upload-release-action@2.3.0
         with:
-          name: toolchain
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: ${{ env.build_dir }}/mipsel-linux-uclibc.tar.xz
-          tag: ${{ env.TAG_ANME }}
+          name: toolchain 
+          tag_name: ${{ env.TAG_ANME }}
           overwrite: true
