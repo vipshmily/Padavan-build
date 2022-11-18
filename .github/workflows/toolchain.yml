@@ -32,17 +32,13 @@ jobs:
           ./build_toolchain
           cd $toolchain_dir
           tar cJf ../mipsel-linux-uclibc.tar.xz *
-          echo "TAG_ANME=$(TZ='Asia/Shanghai' date +%Y.%m.%d-%H%M)" >> $GITHUB_ENV
-      - name: Upload toolchain to artifact
-        uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v3
         with:
           name: toolchain
           path: ${{ env.build_dir }}/mipsel-linux-uclibc.tar.xz
-      - name: Upload toolchain to artifact
-        uses: svenstaro/upload-release-action@2.3.0
+      - uses: svenstaro/upload-release-action@2.3.0
         with:
-          name: toolchain 
-          tag: ${{ env.TAG_ANME }}
-          file: ${{ env.build_dir }}/mipsel-linux-uclibc.tar.xz
           repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: ${{ env.build_dir }}/mipsel-linux-uclibc.tar.xz
+          tag: toolchain
           overwrite: true
