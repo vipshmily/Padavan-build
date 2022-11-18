@@ -4,8 +4,8 @@ on:
   workflow_dispatch:
 env:
   src_dir: /opt/rt-n56u
-  build_dir: $src_dir/toolchain-mipsel
-  toolchain_dir: $src_dir/toolchain-mipsel/toolchain-3.4.x
+  build_dir: /opt/rt-n56u/toolchain-mipsel
+  toolchain_dir: /opt/rt-n56u/toolchain-mipsel/toolchain-3.4.x
   src_git: https://github.com/vipshmily/Padavan-KVR.git
 jobs:
   build:
