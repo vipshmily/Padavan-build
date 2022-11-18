@@ -32,6 +32,7 @@ jobs:
           ./build_toolchain
           cd $toolchain_dir
           tar cJf ../mipsel-linux-uclibc.tar.xz *
+          echo "TAG_ANME=$(date +%Y%m%d)" >> $GITHUB_ENV
       - name: Upload toolchain to artifact
         uses: actions/upload-artifact@v3
         with:
@@ -42,5 +43,5 @@ jobs:
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: ${{ env.build_dir }}/mipsel-linux-uclibc.tar.xz
-          tag: toolchain
+          tag: ${{ env.TAG_ANME }}
           overwrite: true
