@@ -4,8 +4,8 @@ on:
   workflow_dispatch:
 env:
   src_dir: /opt/rt-n56u
-  build_dir: /opt/rt-n56u/toolchain-mipsel
-  toolchain_dir: /opt/rt-n56u/toolchain-mipsel/toolchain-3.4.x
+  build_dir: $src_dir/toolchain-mipsel
+  toolchain_dir: $src_dir/toolchain-mipsel/toolchain-3.4.x
   src_git: https://github.com/vipshmily/Padavan-KVR.git
 jobs:
   build:
@@ -36,13 +36,13 @@ jobs:
       - name: Upload toolchain to artifact
         uses: actions/upload-artifact@v3
         with:
-          name: toolchain_${{ env.TAG_ANME }}
+          name: toolchain
           path: ${{ env.build_dir }}/mipsel-linux-uclibc.tar.xz
       - name: Upload toolchain to artifact
         uses: svenstaro/upload-release-action@2.3.0
         with:
           name: toolchain 
-          tag_name: ${{ env.TAG_ANME }}
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{ env.TAG_ANME }}
           file: ${{ env.build_dir }}/mipsel-linux-uclibc.tar.xz
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
           overwrite: true
