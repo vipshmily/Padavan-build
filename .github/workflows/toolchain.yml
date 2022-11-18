@@ -32,7 +32,7 @@ jobs:
           ./build_toolchain
           cd $toolchain_dir
           tar cJf ../mipsel-linux-uclibc.tar.xz *
-          echo "TAG_ANME=$(date +%Y%m%d)" >> $GITHUB_ENV
+          echo "TAG_ANME=$(date +%Y.%m.%d-%H%M)" >> $GITHUB_ENV
       - name: Upload toolchain to artifact
         uses: actions/upload-artifact@v3
         with:
