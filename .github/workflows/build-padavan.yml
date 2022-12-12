@@ -21,28 +21,15 @@ jobs:
    #- uses: hendrikmuhs/ccache-action@v1.2.3
     - uses: actions/setup-go@v3
       with:
-          go-version: '^1.19.2'
-        
-    - name: Cache node modules
-      id: cache-npm
-      uses: actions/cache@v3
-      env:
-          cache-name: cache-node-modules
-      with:
-           #npm cache files are stored in `~/.npm` on Linux/macOS
+          go-version: '^1.19.2'    
+    - uses: actions/cache@v3
+        with:
           path: |
             ~/.cache/go-build
             ~/go/pkg/mod
-            ~/.npm
-          key: ${{ runner.os }}-go-v1-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+          key: ${{ runner.os }}-go-v1
           restore-keys: |
             ${{ runner.os }}-go-
-            ${{ runner.os }}-build-${{ env.cache-name }}-
-            ${{ runner.os }}-build-
-            ${{ runner.os }}-
-            npm-feature-${{ hashFiles('package-lock.json') }}
-            npm-feature-
-            npm-
       
     - name: 生成版本号
       run: |
@@ -83,7 +70,7 @@ jobs:
         
     - name: Clone source code
       run: |
-        git clone -b main2 --depth=1 https://github.com/vipshmily/Padavan-KVR.git ${{ env.DIR }}
+        git clone -b main-fh4.4.1 --depth=1 https://github.com/vipshmily/Padavan-KVR.git ${{ env.DIR }}
         cd ${{ env.DIR }}/toolchain-mipsel
         sh dl_toolchain.sh
         mkdir -p /opt/images/
@@ -123,8 +110,8 @@ jobs:
         echo "修改CPU频率"
         clock=`echo "obase=16 ; ibase=10 ; (((($MHZ/20)-1)*16+2))" | bc`
         echo "16进制$clock"
-        sed -i "554,555s:0xff:0x7ff:g" ${{ env.DIR }}/trunk/linux-4.4.x/arch/mips/rt2880/init.c
-        sed -i "554,556s:0xc2:0x$clock:g" ${{ env.DIR }}/trunk/linux-4.4.x/arch/mips/rt2880/init.c
+        sed -i "554,555s:0xff:0x7ff:g" ${{ env.DIR }}/trunk/linux-3.4.x/arch/mips/rt2880/init.c
+        sed -i "554,556s:0xc2:0x$clock:g" ${{ env.DIR }}/trunk/linux-3.4.x/arch/mips/rt2880/init.c
         for m in $TNAME;
         do
         if [ ! -f configs/templates/$m.config ] ; then
