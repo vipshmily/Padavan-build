@@ -70,7 +70,7 @@ jobs:
         
     - name: Clone source code
       run: |
-        git clone -b main-fh4.4.1 --depth=1 https://github.com/vipshmily/Padavan-KVR.git ${{ env.DIR }}
+        git clone -b main1 --depth=1 https://github.com/vipshmily/Padavan-KVR.git ${{ env.DIR }}
         cd ${{ env.DIR }}/toolchain-mipsel
         sh dl_toolchain.sh
         mkdir -p /opt/images/
@@ -102,6 +102,7 @@ jobs:
         #cp -f public/ssr-monitor ${{ env.DIR }}/trunk/user/shadowsocks/scripts
         #cp -f public/shadowsocks.sh ${{ env.DIR }}/trunk/user/shadowsocks/scripts
         cp -f public/adguardhome.sh ${{ env.DIR }}/trunk/user/adguardhome
+        cp -f public/Makefile ${{ env.DIR }}/trunk/user/e2fsprogs
         cp -f public/build_firmware_modify ${{ env.DIR }}/trunk
         cwd=`pwd`
         CONFIG_TOOLCHAIN_DIR=${cwd//\//\\\/}\\/toolchain-mipsel
