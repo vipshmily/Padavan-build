@@ -40,7 +40,7 @@ jobs:
         VERSION=$(TZ='Asia/Shanghai' date +%Y.%m.%d-%H%M)
         echo "VERSION=$VERSION" >> $GITHUB_ENV
         # $GITHUB_ENV变量必须要在下一个流程才生效
-        echo "DIR=/opt/Padavan-KVR" >> $GITHUB_ENV
+        echo "DIR=/opt/rt-n56u" >> $GITHUB_ENV
         val1="${{ github.event.inputs.production }}"
         #val2=$(echo $val1 | sed 's/ /-/')
         echo "NAME=${val1}_$VERSION" >> $GITHUB_ENV
@@ -212,7 +212,7 @@ jobs:
         ls -l      
         
     - name : 上传编译的固件Artifacts
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       if: true
       with:
         name: ${{ env.NAME }}
