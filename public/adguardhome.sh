@@ -144,7 +144,7 @@ nvram set adg_enable=0
 exit 0
 else
 logger -t "AdGuardHome" "AdGuardHome下载成功。"
-chmod +x /tmp/AdGuardHome/AdGuardHome
+chmod 777 /tmp/AdGuardHome/AdGuardHome
 fi
 }
 
@@ -152,7 +152,8 @@ start_adg(){
     mkdir -p /tmp/AdGuardHome
 	mkdir -p /etc/storage/AdGuardHome
 	if [ ! -f "/tmp/AdGuardHome/AdGuardHome" ]; then
-	cp /usr/bin/AdGuardHome /tmp/AdGuardHome/AdGuardHome
+#	cp /usr/bin/AdGuardHome /tmp/AdGuardHome/AdGuardHome
+	dl_adg
 	fi
 	getconfig
 	change_dns
