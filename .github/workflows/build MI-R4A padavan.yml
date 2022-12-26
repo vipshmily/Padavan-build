@@ -1,5 +1,5 @@
 # 注意：修改 default:    中的型号为你需要编译的型号，注意名称要与configs/templates/目录下的名字相同
-name: Build Padavan
+name: build MI-R4A padavan
 
 on:
   workflow_dispatch:
