@@ -21,7 +21,7 @@ jobs:
    #- uses: hendrikmuhs/ccache-action@v1.2.3
     - uses: actions/setup-go@v3
       with:
-          go-version: '^1.19.2'    
+          go-version: '^1.19.4'    
     - uses: actions/cache@v3
       with:
           path: |
@@ -86,18 +86,18 @@ jobs:
         TNAME: "${{ github.event.inputs.production }}"
         MHZ: 1120               # CPU超频频率 必须为20的倍数
       run: |
-        if [ -f public/Xray.Makefile ] ; then
-        mv -f public/Xray.Makefile ${{ env.DIR }}/trunk/user/xray/Makefile
-        echo "Makefile file copy success"
-        else
-        exit 1
-        fi
-        if [ -f public/V2ray.Makefile ] ; then
-        mv -f public/V2ray.Makefile ${{ env.DIR }}/trunk/user/v2ray/Makefile
-        echo "Makefile file copy success"
-        else
-        exit 2 
-        fi
+        #if [ -f public/Xray.Makefile ] ; then
+        #mv -f public/Xray.Makefile ${{ env.DIR }}/trunk/user/xray/Makefile
+        #echo "Makefile file copy success"
+        #else
+        #exit 1
+        #fi
+        #if [ -f public/V2ray.Makefile ] ; then
+        #mv -f public/V2ray.Makefile ${{ env.DIR }}/trunk/user/v2ray/Makefile
+        #echo "Makefile file copy success"
+        #else
+        #exit 2 
+        #fi
         cp -f public/MI-R4A.config ${{ env.DIR }}/trunk/configs/templates
         #cp -f public/ssr-monitor ${{ env.DIR }}/trunk/user/shadowsocks/scripts
         #cp -f public/shadowsocks.sh ${{ env.DIR }}/trunk/user/shadowsocks/scripts
