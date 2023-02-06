@@ -1,5 +1,5 @@
 # 注意：修改 default:    中的型号为你需要编译的型号，注意名称要与configs/templates/目录下的名字相同
-name: Build NETGEAR-BZV padavan
+name: Build NETGEAR-BZV Padavan
 
 on:
   workflow_dispatch:
@@ -21,7 +21,7 @@ jobs:
    #- uses: hendrikmuhs/ccache-action@v1.2.3
     - uses: actions/setup-go@v3
       with:
-          go-version: '^1.19.4'    
+          go-version: '^1.12.0'    
     - uses: actions/cache@v3
       with:
           path: |
