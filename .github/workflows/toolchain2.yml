@@ -10,10 +10,10 @@ on:
   watch:
     types: [started]
 env:
-  src_dir: /opt/padavan
-  build_dir: /opt/padavan/toolchain-mipsel
-  toolchain_dir: /opt/padavan/toolchain-mipsel/toolchain-3.4.x
-  src_git: https://github.com/tsl0922/padavan.git
+  src_dir: /opt/Padavan-KVR
+  build_dir: /opt/Padavan-KVR/toolchain-mipsel
+  toolchain_dir: /opt/Padavan-KVR/toolchain-mipsel/toolchain-3.4.x
+  src_git: https://github.com/vipshmily/Padavan-KVR.git
 jobs:
   build:
     name: Build Padavan toolchain
