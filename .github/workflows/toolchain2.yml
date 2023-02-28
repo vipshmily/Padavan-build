@@ -33,8 +33,7 @@ jobs:
       - name: Build toolchain
         run: |
           cd $build_dir
-          #./clean_toolchain
-          ./build_toolchain
+          make toolchain/build
           cd $toolchain_dir
           tar cJf ../mipsel-linux-uclibc-gcc10.tar.xz *
       - uses: actions/upload-artifact@v3
