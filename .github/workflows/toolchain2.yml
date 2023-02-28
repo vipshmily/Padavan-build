@@ -33,6 +33,7 @@ jobs:
       - name: Build toolchain
         run: |
           cd $build_dir
+          sed -i '/cp -f/d' Makefile
           make toolchain/build
           cd $toolchain_dir
           tar cJf ../mipsel-linux-uclibc-gcc10.tar.xz *
