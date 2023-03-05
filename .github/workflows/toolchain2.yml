@@ -13,7 +13,7 @@ env:
   src_dir: /opt/rt-n56u
   build_dir: /opt/rt-n56u/toolchain-mipsel
   toolchain_dir: /opt/rt-n56u/toolchain-mipsel/toolchain-4.4.x
-  src_git: https://github.com/tsl0922/padavan.git
+  src_git: https://github.com/vipshmily/Padavan-KVR.git
 jobs:
   build:
     name: Build Padavan toolchain
