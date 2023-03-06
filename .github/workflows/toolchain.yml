@@ -1,14 +1,7 @@
 name: toolchain
 
 on: 
-#  release:
-#    types: [published]
-#  push:
-#    tags:
-#    - 'v*'
   workflow_dispatch:
-  watch:
-    types: [started]
 env:
   src_dir: /opt/rt-n56u
   build_dir: /opt/rt-n56u/toolchain-mipsel
@@ -16,8 +9,9 @@ env:
   src_git: https://github.com/vipshmily/Padavan-KVR.git
 jobs:
   build:
-    name: Build Padavan toolchain
+    name: build
     runs-on: ubuntu-latest
+    if: github.event.repository.owner.id == github.event.sender.id
     steps:
       - uses: actions/checkout@v3
       - name: Prepare environment
@@ -33,6 +27,7 @@ jobs:
       - name: Build toolchain
         run: |
           cd $build_dir
+          if [ ! -f build_toolchain ] ; then echo "build_toolchain.sh not found "; exit 1; fi
           ./clean_toolchain
           ./build_toolchain
           cd $toolchain_dir
