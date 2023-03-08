@@ -54,10 +54,6 @@ jobs:
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: ${{ env.toolchain_dir }}/mipsel-linux-uclibc.tar.xz
-          tag: toolchain
-      - uses: svenstaro/upload-release-action@2.3.0
-        with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: ${{ env.build_dir }}/padavan_toolchain.tar.xz
+                ${{ env.build_dir }}/padavan_toolchain.tar.xz
           tag: toolchain
           overwrite: true
