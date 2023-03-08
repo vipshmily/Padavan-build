@@ -1,7 +1,14 @@
-name: toolchain
+name: Padavan_toolchain
 
 on: 
+#  release:
+#    types: [published]
+#  push:
+#    tags:
+#    - 'v*'
   workflow_dispatch:
+  watch:
+    types: [started]
 env:
   src_dir: /opt/rt-n56u
   build_dir: /opt/rt-n56u/toolchain-mipsel
@@ -9,11 +16,10 @@ env:
   src_git: https://github.com/vipshmily/Padavan-KVR.git
 jobs:
   build:
-    name: build
+    name: Build Padavan toolchain
     runs-on: ubuntu-latest
     if: github.event.repository.owner.id == github.event.sender.id
     steps:
-      - uses: actions/checkout@v3
       - name: Prepare environment
         run: |
           sudo apt update
@@ -30,15 +36,19 @@ jobs:
           if [ ! -f build_toolchain ] ; then echo "build_toolchain.sh not found "; exit 1; fi
           ./clean_toolchain
           ./build_toolchain
+      - name: Compressed toolchain
+        run: |
           cd $toolchain_dir
           tar cJf ../mipsel-linux-uclibc.tar.xz *
-      - uses: actions/upload-artifact@v3
+          cd $build_dir
+          tar cJf ../padavan_toolchain.tar.xz *
+      - name : Upload toolchain to Artifact
+        uses: actions/upload-artifact@main
         with:
-          name: toolchain
-          path: ${{ env.build_dir }}/mipsel-linux-uclibc.tar.xz
-      - uses: svenstaro/upload-release-action@2.3.0
+          name: mipsel-linux-uclibc.tar.xz
+          path: ${{ env.toolchain_dir }}/mipsel-linux-uclibc.tar.xz
+      - name : Upload padavan toolchain
+        uses: actions/upload-artifact@main
         with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: ${{ env.build_dir }}/mipsel-linux-uclibc.tar.xz
-          tag: toolchain
-          overwrite: true
+          name: Padavan-toolchain.tar.xz
+          path: ${{ env.build_dir }}/padavan_toolchain.tar.xz
