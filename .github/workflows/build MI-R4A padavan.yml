@@ -29,6 +29,8 @@ jobs:
             ~/.cache/go-build
             ~/go/pkg/mod
           key: ${{ runner.os }}-go-v1
+          restore-keys: |
+            ${{ runner.os }}-go-
           
     - name: 生成版本号
       run: |
