@@ -61,17 +61,15 @@ jobs:
          sed -i "554,556s:0xc2:0x$clock:g" ${{ env.DIR }}/trunk/linux-3.4.x/arch/mips/rt2880/init.c
           fakeroot ./build_firmware_ci ${{ matrix.targets }}
           echo "TAG_ANME=$(TZ='Asia/Shanghai' date +%Y.%m.%d-%H%M)" >> $GITHUB_ENV
-      - uses: actions/upload-artifact@v3
+      - name: Upload image
+        uses: actions/upload-artifact@v3
         with:
           name: images
-          path: /opt/images/*.trx
-      - uses: rickstaa/action-create-tag@v1
-        with:
-          tag: ${{ env.TAG_ANME }}
-          force_push_tag: true
-      - uses: ncipollo/release-action@v1
+          path: ${{ env.DIR }}/trunk/images/*.trx
+      - name: Update Release
+        uses: ncipollo/release-action@v1
         with:
           commit: ${{ github.sha }}
           tag: ${{ env.TAG_ANME }}
-          artifacts: /opt/images/*.trx
+          artifacts: ${{ env.DIR }}/trunk/images/*.trx
           allowUpdates: true
