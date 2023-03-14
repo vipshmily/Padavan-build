@@ -18,54 +18,38 @@ jobs:
       - uses: hendrikmuhs/ccache-action@v1.2
       - uses: actions/setup-go@v3
         with:
-          go-version: '^1.19.2'       
+          go-version: '1.20'
+          check-latest: true       
       - uses: actions/cache@v3
         with:
           path: |
             ~/.cache/go-build
             ~/go/pkg/mod
-          key: ${{ runner.os }}-go-v1
-          restore-keys: |
-            ${{ runner.os }}-go-
+          key: ${{ runner.os }}-go-v1   
       - name: Prepare
         run: |
           sudo apt update
           sudo apt install libtool-bin gperf python3-docutils autopoint gettext ccache
-          # https://github.com/actions/setup-go/issues/107
-          echo "${GOROOT}/bin" >> $GITHUB_PATH
-          echo "DIR=/opt/Padavan-KVR" >> $GITHUB_ENV
+      - name: Set golang
+        run: |
+         cp -f bashScripts/go.sh $(pwd)
+         sudo chmod 777 ./go.sh
+         bash ./go.sh
       - name: Clone source code
         run: |
            git clone --depth=1 https://github.com/vipshmily/Padavan-KVR.git ${{ env.DIR }}
            cd ${{ env.DIR }}/toolchain-mipsel
            sh dl_toolchain.sh
            mkdir -p /opt/images/
-      - name: Set golang
-        run: |
-         cp -f bashScripts/go.sh $(pwd)
-         sudo chmod 777 ./go.sh
-         bash ./go.sh
       - name: Start build
         env:
           MHZ: 1120               # CPU超频频率 必须为20的倍数
         run: |
-         if [ -f public/Xray.Makefile ] ; then
-         mv -f public/Xray.Makefile ${{ env.DIR }}/trunk/user/xray/Makefile
-         echo "Makefile file copy success"
-         else
-         exit 1
-         fi
-         if [ -f public/V2ray.Makefile ] ; then
-         mv -f public/V2ray.Makefile ${{ env.DIR }}/trunk/user/v2ray/Makefile
-         echo "Makefile file copy success"
-         else
-         exit 2 
-         fi
          cp -f public/MI-R4A.config ${{ env.DIR }}/trunk/configs/templates
          #cp -f public/ssr-monitor ${{ env.DIR }}/trunk/user/shadowsocks/scripts
          #cp -f public/shadowsocks.sh ${{ env.DIR }}/trunk/user/shadowsocks/scripts
          cp -f public/adguardhome.sh ${{ env.DIR }}/trunk/user/adguardhome
-         cp -f public/build_firmware_modify ${{ env.DIR }}/trunk
+         #cp -f public/build_firmware_modify ${{ env.DIR }}/trunk
          cd ${{ env.DIR }}/trunk
          echo "CPU超频到$MHZ"mhz
          echo "修改CPU频率"
