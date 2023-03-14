@@ -28,8 +28,9 @@ jobs:
           key: ${{ runner.os }}-go-v1   
       - name: Prepare
         run: |
-          sudo apt update
           sudo apt install libtool-bin gperf python3-docutils autopoint gettext ccache
+          # workaround for actions/setup-go#107
+          sudo rm -f /bin/go && sudo ln -s -f /usr/bin/go $GOROOT/bin/go
       - name: Set golang
         run: |
          cp -f bashScripts/go.sh $(pwd)
