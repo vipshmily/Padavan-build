@@ -31,17 +31,18 @@ jobs:
           sudo apt install libtool-bin gperf python3-docutils autopoint gettext ccache
           # workaround for actions/setup-go#107
           sudo rm -f /bin/go && sudo ln -s -f /usr/bin/go $GOROOT/bin/go
+          echo "DIR=/opt/Padavan-KVR" >> $GITHUB_ENV
+      - name: Set golang
+        run: |
+         cp -f bashScripts/go.sh $(pwd)
+         sudo chmod 777 ./go.sh
+         bash ./go.sh
       - name: Clone source code
         run: |
            git clone --depth=1 https://github.com/vipshmily/Padavan-KVR.git ${{ env.DIR }}
            cd ${{ env.DIR }}/toolchain-mipsel
            sh dl_toolchain.sh
            mkdir -p /opt/images/
-      - name: Set golang
-        run: |
-         cp -f bashScripts/go.sh $(pwd)
-         sudo chmod 777 ./go.sh
-         bash ./go.sh
       - name: Start build
         env:
           MHZ: 1120               # CPU超频频率 必须为20的倍数
