@@ -18,19 +18,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
-   #- uses: hendrikmuhs/ccache-action@v1.2.3
+    - uses: hendrikmuhs/ccache-action@v1.2
     - uses: actions/setup-go@v3
       with:
-          go-version: '^1.20.0'    
+          go-version: '1.20'
+          check-latest: true    
     - uses: actions/cache@v3
       with:
           path: |
             ~/.cache/go-build
             ~/go/pkg/mod
           key: ${{ runner.os }}-go-v1
-          restore-keys: |
-            ${{ runner.os }}-go-
-      
+          
     - name: 生成版本号
       run: |
         whoami
@@ -50,13 +49,13 @@ jobs:
         echo "NAME=${val1}_$VERSION" >> $GITHUB_ENV
         echo "TAG=v$VERSION" >> $GITHUB_ENV
         ip addr
+        
     - name: 创建目录
       run: |
         echo ${{ env.NAME }}
         echo ${{ env.TAG }}
         sudo mkdir -m 777 -p ${{ env.DIR }}
         sudo mkdir -m 777 -p /opt/images/
-        
         echo 开始编译时间 >> /opt/images/readme.txt
         TZ='Asia/Shanghai'  date  '+%Y-%m-%d %H:%M:%S' >> /opt/images/readme.txt
         
@@ -67,6 +66,12 @@ jobs:
           #sudo apt-get -y install unzip libtool-bin curl cmake gperf gawk flex bison nano xxd fakeroot \
           #cpio git python-docutils gettext automake autopoint texinfo build-essential help2man \
           #pkg-config zlib1g-dev libgmp3-dev libmpc-dev libmpfr-dev libncurses5-dev libltdl-dev wget
+          
+    - name: Set golang
+      run: |
+        cp -f bashScripts/go.sh $(pwd)
+        sudo chmod 777 ./go.sh
+        bash ./go.sh
         
     - name: Clone source code
       run: |
@@ -74,13 +79,7 @@ jobs:
         cd ${{ env.DIR }}/toolchain-mipsel
         sh dl_toolchain.sh
         mkdir -p /opt/images/
-                
-    - name: Set golang
-      run: |
-        cp -f bashScripts/go.sh $(pwd)
-        sudo chmod 777 ./go.sh
-        bash ./go.sh
-            
+                        
     - name: Build Firmware
       env:
         TNAME: "${{ github.event.inputs.production }}"
@@ -223,6 +222,7 @@ jobs:
         sudo ./build_firmware_modify $m 0
         sudo mv -f images/*.trx /opt/images/
         done
+        
     - name: 收集信息
       if: true
       run: |
@@ -230,15 +230,12 @@ jobs:
         #记录一个版本号
         echo 完成编译时间 >> /opt/images/readme.txt
         TZ='Asia/Shanghai'  date  '+%Y-%m-%d %H:%M:%S' >> /opt/images/readme.txt
-        
         echo  >> /opt/images/readme.txt
         echo 编译版本 >> /opt/images/readme.txt
-        
         pushd ${{ env.DIR }}
         git ls-remote --get-url origin >> /opt/images/readme.txt
         git log -1 >> /opt/images/readme.txt
         popd
-        
         echo  >> /opt/images/readme.txt
         echo md5校验值 >> /opt/images/readme.txt
         cd /opt/images
