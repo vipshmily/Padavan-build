@@ -12,7 +12,7 @@ on:
 env:
   src_dir: /opt/rt-n56u
   build_dir: /opt/rt-n56u/toolchain-mipsel
-  toolchain_dir: /opt/rt-n56u/toolchain-mipsel/toolchain-4.4.x
+  toolchain_dir: /opt/rt-n56u/toolchain-mipsel/toolchain-3.4.x
   src_git: https://github.com/vipshmily/Padavan-KVR.git
 jobs:
   build:
