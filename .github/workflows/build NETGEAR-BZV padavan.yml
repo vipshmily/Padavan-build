@@ -86,8 +86,19 @@ jobs:
         TNAME: "${{ github.event.inputs.production }}"
         MHZ: 1120               # CPU超频频率 必须为20的倍数
       run: |
+        if [ -f public/e2fsprogs.Makefile ] ; then
+        mv -f public/e2fsprogs.Makefile ${{ env.DIR }}/trunk/user/e2fsprogs/Makefile
+        echo "Makefile file copy success"
+        else
+        exit 1
+        fi
+        if [ -f public/openvpn.Makefile ] ; then
+        mv -f public/openvpn.Makefile ${{ env.DIR }}/trunk/user/openvpn/Makefile
+        echo "Makefile file copy success"
+        else
+        exit 2 
+        fi
         cp -f public/adguardhome.sh ${{ env.DIR }}/trunk/user/adguardhome
-        cp -f public/Makefile ${{ env.DIR }}/trunk/user/e2fsprogs
         cwd=`pwd`
         CONFIG_TOOLCHAIN_DIR=${cwd//\//\\\/}\\/toolchain-mipsel
         cd ${{ env.DIR }}/trunk
