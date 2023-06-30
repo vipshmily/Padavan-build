@@ -18,19 +18,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
-    - uses: hendrikmuhs/ccache-action@v1.2
     - uses: actions/setup-go@v3
       with:
           go-version: '1.20'
-          check-latest: true    
-    - uses: actions/cache@v3
-      with:
-          path: |
-            ~/.cache/go-build
-            ~/go/pkg/mod
-          key: ${{ runner.os }}-go-v1
-          restore-keys: |
-            ${{ runner.os }}-go-
+          check-latest: true
           
     - name: 生成版本号
       run: |
@@ -141,9 +132,8 @@ jobs:
         sed -i '/CONFIG_FIRMWARE_INCLUDE_DDNSTO/d' .config
         sed -i '/CONFIG_FIRMWARE_INCLUDE_WIREGUARD/d' .config
         sed -i '/CONFIG_FIRMWARE_INCLUDE_ALDRIVER/d' .config
-        sed -i '/CONFIG_FIRMWARE_INCLUDE_SQM/d' .config
-        sed -i '/CONFIG_FIRMWARE_INCLUDE_LIBCGROUP/d' .config
         sed -i '/CONFIG_FIRMWARE_INCLUDE_MSD_LITE/d' .config
+        sed -i '/CONFIG_FIRMWARE_INCLUDE_MTR/d' .config
         sed -i 's/CONFIG_FIRMWARE_INCLUDE_OPENSSL_EXE=n/CONFIG_FIRMWARE_INCLUDE_OPENSSL_EXE=y/g' .config
         ######################################################################
         #以下选项是定义你需要的功能（y=集成,n=忽略），重新写入到.config文件
@@ -194,9 +184,8 @@ jobs:
         echo "CONFIG_FIRMWARE_INCLUDE_WIREGUARD=n" >>.config #wireguard 10k
         ##内网穿透服务##
         echo "CONFIG_FIRMWARE_INCLUDE_ALDRIVER=n" >> .config #ALDRIVER  ~3m
-        echo "CONFIG_FIRMWARE_INCLUDE_SQM=n" >> .config #SQM
-        echo "CONFIG_FIRMWARE_INCLUDE_LIBCGROUP=n" >> .config #LIBCGROUP
         echo "CONFIG_FIRMWARE_INCLUDE_MSD_LITE=y" >> .config #MSD_LITE
+        echo "CONFIG_FIRMWARE_INCLUDE_MTR=y" >> .config #MTR
         #########################################################################################
         # 自定义添加其它功能请参考源码configs/templates/目录下的config文件。按照上面的格式添加即可
         # 格式如下：

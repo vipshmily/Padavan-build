@@ -20,15 +20,8 @@ jobs:
     - uses: actions/checkout@v3
     - uses: actions/setup-go@v3
       with:
-          go-version: '^1.19.5'     
-    - uses: actions/cache@v3
-      with:
-          path: |
-            ~/.cache/go-build
-            ~/go/pkg/mod
-          key: ${{ runner.os }}-go-v1
-          restore-keys: |
-            ${{ runner.os }}-go-
+          go-version: '1.20'
+          check-latest: true
       
     - name: 生成版本号
       run: |
@@ -138,7 +131,7 @@ jobs:
         sed -i '/CONFIG_FIRMWARE_INCLUDE_SMARTDNS/d' .config #删除配置项SMARTDNS
         sed -i '/CONFIG_FIRMWARE_INCLUDE_SRELAY/d' .config #删除配置项SRELAY
         sed -i '/CONFIG_FIRMWARE_INCLUDE_KUMASOCKS/d' .config #删除配置项KUMASOCKS
-        sed -i '/CONFIG_FIRMWARE_CPU_600MHZ/d' .config #删除配置项超频900MHz
+        sed -i '/CONFIG_FIRMWARE_CPU_600MHZ/d' .config #删除配置项超频600MHz
         sed -i '/CONFIG_FIRMWARE_INCLUDE_SSOBFS/d' .config
         sed -i '/CONFIG_FIRMWARE_INCLUDE_V2RAY/d' .config
         sed -i '/CONFIG_FIRMWARE_INCLUDE_XRAY/d' .config
@@ -154,9 +147,8 @@ jobs:
         sed -i '/CONFIG_FIRMWARE_INCLUDE_DDNSTO/d' .config
         sed -i '/CONFIG_FIRMWARE_INCLUDE_WIREGUARD/d' .config
         sed -i '/CONFIG_FIRMWARE_INCLUDE_ALDRIVER/d' .config
-        sed -i '/CONFIG_FIRMWARE_INCLUDE_SQM/d' .config
-        sed -i '/CONFIG_FIRMWARE_INCLUDE_LIBCGROUP/d' .config
         sed -i '/CONFIG_FIRMWARE_INCLUDE_MSD_LITE/d' .config
+        sed -i '/CONFIG_FIRMWARE_INCLUDE_MTR/d' .config
         sed -i 's/CONFIG_FIRMWARE_INCLUDE_OPENSSL_EXE=n/CONFIG_FIRMWARE_INCLUDE_OPENSSL_EXE=y/g' .config
         ######################################################################
         #以下选项是定义你需要的功能（y=集成,n=忽略），重新写入到.config文件
@@ -207,9 +199,8 @@ jobs:
         echo "CONFIG_FIRMWARE_INCLUDE_WIREGUARD=n" >>.config #wireguard 10k
         ##内网穿透服务##
         echo "CONFIG_FIRMWARE_INCLUDE_ALDRIVER=n" >> .config #ALDRIVER  ~3m
-        echo "CONFIG_FIRMWARE_INCLUDE_SQM=n" >> .config #SQM
-        echo "CONFIG_FIRMWARE_INCLUDE_LIBCGROUP=n" >> .config #LIBCGROUP
         echo "CONFIG_FIRMWARE_INCLUDE_MSD_LITE=y" >> .config #MSD_LITE
+        echo "CONFIG_FIRMWARE_INCLUDE_MTR=y" >> .config #MTR
         #########################################################################################
         # 自定义添加其它功能请参考源码configs/templates/目录下的config文件。按照上面的格式添加即可
         # 格式如下：
