@@ -150,22 +150,27 @@ fi
 }
 
 start_adg(){
-  mkdir -p /tmp/AdGuardHome
+    mkdir -p /tmp/AdGuardHome
 	mkdir -p /etc/storage/AdGuardHome
+	if [ ! -f "/tmp/AdGuardHome/AdGuardHome" ]; then
+#	cp /usr/bin/AdGuardHome /tmp/AdGuardHome/AdGuardHome
+	dl_adg
+	fi
 	getconfig
 	change_dns
 	set_iptable
 	logger -t "AdGuardHome" "启动 AdGuardHome"
-	eval "AdGuardHome -c $adg_file -w /tmp/AdGuardHome -v" &
+	eval "/tmp/AdGuardHome/AdGuardHome -c $adg_file -w /tmp/AdGuardHome -v" &
+
+}
+stop_adg(){
+rm -rf /tmp/AdGuardHome
+logger -t "AdGuardHome" "停止 AdGuardHome"
+killall -9 AdGuardHome
+del_dns
+clear_iptable
 }
 
-stop_adg(){
-  rm -rf /tmp/AdGuardHome
-  logger -t "AdGuardHome" "停止 AdGuardHome"
-  killall -9 AdGuardHome
-  del_dns
-  clear_iptable
-}
 
 case $1 in
 start)
