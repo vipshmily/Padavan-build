@@ -68,7 +68,7 @@ jobs:
         
     - name: Clone source code
       run: |
-        git clone --depth=1 https://github.com/vipshmily/Padavan-KVR.git ${{ env.DIR }}
+        git clone --depth=1 https://github.com/vipshmily/Padavan-3.4-KVR.git ${{ env.DIR }}
         cd ${{ env.DIR }}/toolchain-mipsel
         sh dl_toolchain.sh
         mkdir -p /opt/images/
@@ -84,13 +84,6 @@ jobs:
         else
         exit 1
         fi
-        #if [ -f public/openvpn.Makefile ] ; then
-        #mv -f public/openvpn.Makefile ${{ env.DIR }}/trunk/user/openvpn/Makefile
-        #echo "Makefile file copy success"
-        #else
-        #exit 2 
-        #fi
-        cp -f public/adguardhome.sh ${{ env.DIR }}/trunk/user/adguardhome
         cwd=`pwd`
         CONFIG_TOOLCHAIN_DIR=${cwd//\//\\\/}\\/toolchain-mipsel
         cd ${{ env.DIR }}/trunk

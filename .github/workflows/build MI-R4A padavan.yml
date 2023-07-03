@@ -68,7 +68,7 @@ jobs:
         
     - name: Clone source code
       run: |
-        git clone --depth=1 https://github.com/vipshmily/Padavan-KVR.git ${{ env.DIR }}
+        git clone --depth=1 https://github.com/vipshmily/Padavan-3.4-KVR.git ${{ env.DIR }}
         cd ${{ env.DIR }}/toolchain-mipsel
         sh dl_toolchain.sh
         mkdir -p /opt/images/
@@ -79,7 +79,7 @@ jobs:
         MHZ: 1120               # CPU超频频率 必须为20的倍数
       run: |
         cp -f public/MI-R4A.config ${{ env.DIR }}/trunk/configs/templates
-        cp -f public/adguardhome.sh ${{ env.DIR }}/trunk/user/adguardhome
+        #cp -f public/adguardhome.sh ${{ env.DIR }}/trunk/user/adguardhome
         cwd=`pwd`
         CONFIG_TOOLCHAIN_DIR=${cwd//\//\\\/}\\/toolchain-mipsel
         cd ${{ env.DIR }}/trunk
@@ -162,7 +162,7 @@ jobs:
         ##DNS服务##
         echo "CONFIG_FIRMWARE_INCLUDE_SMARTDNS=y" >> .config #smartdns
         echo "CONFIG_FIRMWARE_INCLUDE_SMARTDNSBIN=n" >> .config #smartdns二进制文件
-        echo "CONFIG_FIRMWARE_INCLUDE_ADGUARDHOME=y" >> .config #adg DNS去AD
+        echo "CONFIG_FIRMWARE_INCLUDE_ADGUARDHOME=n" >> .config #adg DNS去AD
         ##DNS服务##
         
         ##文件管理##
