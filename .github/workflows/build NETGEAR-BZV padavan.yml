@@ -22,6 +22,10 @@ jobs:
       with:
           go-version: '1.20'
           check-latest: true
+    - uses: actions/setup-node@v3
+      with:
+          node-version: 18
+          check-latest: true
       
     - name: 生成版本号
       run: |
@@ -76,7 +80,7 @@ jobs:
     - name: Build Firmware
       env:
         TNAME: "${{ github.event.inputs.production }}"
-        MHZ: 1120               # CPU超频频率 必须为20的倍数
+        MHZ: 1200               # CPU超频频率 必须为20的倍数
       run: |
         if [ -f public/e2fsprogs.Makefile ] ; then
         mv -f public/e2fsprogs.Makefile ${{ env.DIR }}/trunk/user/e2fsprogs/Makefile
