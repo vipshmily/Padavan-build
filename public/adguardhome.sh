@@ -1,5 +1,8 @@
 #!/bin/sh
-
+adgb=`nvram get adg_enable`
+D="/etc/storage/cron/crontabs"
+F="$D/`nvram get http_username`"
+#adgip=`nvram get adg_ipaddr`
 change_dns() {
 if [ "$(nvram get adg_redirect)" = 1 ]; then
 sed -i '/no-resolv/d' /etc/storage/dnsmasq/dnsmasq.conf
@@ -12,57 +15,56 @@ EOF
 logger -t "AdGuardHome" "添加DNS转发到5335端口"
 fi
 }
+
 del_dns() {
 sed -i '/no-resolv/d' /etc/storage/dnsmasq/dnsmasq.conf
 sed -i '/server=127.0.0.1#5335/d' /etc/storage/dnsmasq/dnsmasq.conf
 /sbin/restart_dhcpd
 }
 
-set_iptable()
-{
+set_iptable() {
     if [ "$(nvram get adg_redirect)" = 2 ]; then
-	IPS="`ifconfig | grep "inet addr" | grep -v ":127" | grep "Bcast" | awk '{print $2}' | awk -F : '{print $2}'`"
-	for IP in $IPS
-	do
-		iptables -t nat -A PREROUTING -p tcp -d $IP --dport 53 -j REDIRECT --to-ports 5335 >/dev/null 2>&1
-		iptables -t nat -A PREROUTING -p udp -d $IP --dport 53 -j REDIRECT --to-ports 5335 >/dev/null 2>&1
-	done
+  IPS="`ifconfig | grep "inet addr" | grep -v ":127" | grep "Bcast" | awk '{print $2}' | awk -F : '{print $2}'`"
+  for IP in $IPS
+  do
+    iptables -t nat -A PREROUTING -p tcp -d $IP --dport 53 -j REDIRECT --to-ports 5335 >/dev/null 2>&1
+    iptables -t nat -A PREROUTING -p udp -d $IP --dport 53 -j REDIRECT --to-ports 5335 >/dev/null 2>&1
+  done
 
-	IPS="`ifconfig | grep "inet6 addr" | grep -v " fe80::" | grep -v " ::1" | grep "Global" | awk '{print $3}'`"
-	for IP in $IPS
-	do
-		ip6tables -t nat -A PREROUTING -p tcp -d $IP --dport 53 -j REDIRECT --to-ports 5335 >/dev/null 2>&1
-		ip6tables -t nat -A PREROUTING -p udp -d $IP --dport 53 -j REDIRECT --to-ports 5335 >/dev/null 2>&1
-	done
+  IPS="`ifconfig | grep "inet6 addr" | grep -v " fe80::" | grep -v " ::1" | grep "Global" | awk '{print $3}'`"
+  for IP in $IPS
+  do
+    ip6tables -t nat -A PREROUTING -p tcp -d $IP --dport 53 -j REDIRECT --to-ports 5335 >/dev/null 2>&1
+    ip6tables -t nat -A PREROUTING -p udp -d $IP --dport 53 -j REDIRECT --to-ports 5335 >/dev/null 2>&1
+  done
     logger -t "AdGuardHome" "重定向53端口"
     fi
 }
 
-clear_iptable()
-{
-	OLD_PORT="5335"
-	IPS="`ifconfig | grep "inet addr" | grep -v ":127" | grep "Bcast" | awk '{print $2}' | awk -F : '{print $2}'`"
-	for IP in $IPS
-	do
-		iptables -t nat -D PREROUTING -p udp -d $IP --dport 53 -j REDIRECT --to-ports $OLD_PORT >/dev/null 2>&1
-		iptables -t nat -D PREROUTING -p tcp -d $IP --dport 53 -j REDIRECT --to-ports $OLD_PORT >/dev/null 2>&1
-	done
+clear_iptable() {
+  OLD_PORT="5335"
+  IPS="`ifconfig | grep "inet addr" | grep -v ":127" | grep "Bcast" | awk '{print $2}' | awk -F : '{print $2}'`"
+  for IP in $IPS
+  do
+    iptables -t nat -D PREROUTING -p udp -d $IP --dport 53 -j REDIRECT --to-ports $OLD_PORT >/dev/null 2>&1
+    iptables -t nat -D PREROUTING -p tcp -d $IP --dport 53 -j REDIRECT --to-ports $OLD_PORT >/dev/null 2>&1
+  done
 
-	IPS="`ifconfig | grep "inet6 addr" | grep -v " fe80::" | grep -v " ::1" | grep "Global" | awk '{print $3}'`"
-	for IP in $IPS
-	do
-		ip6tables -t nat -D PREROUTING -p udp -d $IP --dport 53 -j REDIRECT --to-ports $OLD_PORT >/dev/null 2>&1
-		ip6tables -t nat -D PREROUTING -p tcp -d $IP --dport 53 -j REDIRECT --to-ports $OLD_PORT >/dev/null 2>&1
-	done
-	
+  IPS="`ifconfig | grep "inet6 addr" | grep -v " fe80::" | grep -v " ::1" | grep "Global" | awk '{print $3}'`"
+  for IP in $IPS
+  do
+    ip6tables -t nat -D PREROUTING -p udp -d $IP --dport 53 -j REDIRECT --to-ports $OLD_PORT >/dev/null 2>&1
+    ip6tables -t nat -D PREROUTING -p tcp -d $IP --dport 53 -j REDIRECT --to-ports $OLD_PORT >/dev/null 2>&1
+  done
+
 }
 
-getconfig(){
+getconfig() {
 adg_file="/etc/storage/adg.sh"
 if [ ! -f "$adg_file" ] || [ ! -s "$adg_file" ] ; then
-	cat > "$adg_file" <<-\EEE
+  cat > "$adg_file" <<-\EEE
 bind_host: 0.0.0.0
-bind_port: 3030
+bind_port: 3000
 auth_name: adguardhome
 auth_pass: adguardhome
 language: zh-cn
@@ -80,6 +82,7 @@ dns:
   refuse_any: true
   bootstrap_dns:
   - 223.5.5.5
+  - 119.29.29.29
   all_servers: true
   allowed_clients: []
   disallowed_clients: []
@@ -90,7 +93,10 @@ dns:
   safebrowsing_enabled: false
   resolveraddress: ""
   upstream_dns:
-  - 223.5.5.5
+  - quic://i.passcloud.xyz:784
+  - tls://i.passcloud.xyz:5432
+  - quic://a.passcloud.xyz:784
+  - tls://a.passcloud.xyz:5432
 tls:
   enabled: false
   server_name: ""
@@ -109,13 +115,9 @@ filters:
   name: AdAway
   id: 2
 - enabled: true
-  url: https://hosts-file.net/ad_servers.txt
-  name: hpHosts - Ad and Tracking servers only
-  id: 3
-- enabled: true
   url: https://www.malwaredomainlist.com/hostslist/hosts.txt
   name: MalwareDomainList.com Hosts List
-  id: 4
+  id: 3
 user_rules: []
 dhcp:
   enabled: false
@@ -126,60 +128,110 @@ dhcp:
   range_end: ""
   lease_duration: 86400
   icmp_timeout_msec: 1000
-clients: []
+
 log_file: ""
 verbose: false
 schema_version: 3
+
 EEE
-	chmod 755 "$adg_file"
+  chmod 755 "$adg_file"
 fi
 }
 
-dl_adg() {
-logger -t "AdGuardHome" "下载AdGuardHome"
-#curl -k -s -o /tmp/AdGuardHome/AdGuardHome --connect-timeout 10 --retry 3 https://ghproxy.com/https://github.com/vipshmily/OutSide/blob/main/AdGuardHome
-curl -k -s -o /tmp/AdGuardHome/AdGuardHome --connect-timeout 10 --retry 3 https://raw.githubusercontent.com/vipshmily/OutSide/main/AdGuardHome
-if [ ! -f "/tmp/AdGuardHome/AdGuardHome" ]; then
-logger -t "AdGuardHome" "AdGuardHome下载失败，请检查是否能正常访问github!程序将退出。"
-nvram set adg_enable=0
+start_adg() {
+sed -Ei '/AdGuardHome守护进程|^$/d' "$F"
+  logger -t "AdGuardHome" "正在启动..."
+  AdGuardHome="/tmp/AdGuardHome/AdGuardHome"
+  [ -f /etc/storage/bin/AdGuardHome ] && AdGuardHome="/etc/storage/bin/AdGuardHome"
+	if [ ! -s "$AdGuardHome" ] ; then
+	logger -t "AdGuardHome" "找不到 $AdGuardHome ，开始下载 AdGuardHome 程序"
+	tag=$(curl -k --silent "https://api.github.com/repos/AdguardTeam/AdGuardHome/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
+	[ -z "$tag" ] && tag="$( curl -k -L --connect-timeout 20 --silent https://api.github.com/repos/AdguardTeam/AdGuardHome/releases/latest | grep 'tag_name' | cut -d\" -f4 )"
+	[ -z "$tag" ] && tag="$( curl -k --connect-timeout 20 --silent https://api.github.com/repos/AdguardTeam/AdGuardHome/releases/latest | grep 'tag_name' | cut -d\" -f4 )"
+	[ -z "$tag" ] && tag="$( curl -k --connect-timeout 20 -s https://api.github.com/repos/AdguardTeam/AdGuardHome/releases/latest | grep 'tag_name' | cut -d\" -f4 )"
+		if [ ! -z "$tag" ] ; then
+			logger -t "AdGuardHome" "自动下载最新版本 $tag,下载较慢，耐心等待"
+			curl -L -k -S -o "/tmp/AdGuardHome.tar.gz" --connect-timeout 10 --retry 3 "https://github.com/AdguardTeam/AdGuardHome/releases/download/$tag/AdGuardHome_linux_mipsle_softfloat.tar.gz"
+			tar -xzvf /tmp/AdGuardHome.tar.gz -C /tmp
+		else
+			static_adguard="https://fastly.jsdelivr.net/gh/AdguardTeam/AdGuardHome@releases/download/v0.107.35/AdGuardHome_linux_mipsle_softfloat.tar.gz"
+			logger -t "AdGuardHome" "获取最新版本失败,下载$static_adguard"
+			curl -L -k -S -o "/tmp/AdGuardHome.tar.gz" --connect-timeout 10 --retry 3 "$static_adguard"
+			tar -xzvf /tmp/AdGuardHome.tar.gz -C /tmp ; cd /tmp/AdGuardHome
+		fi
+		 cd /tmp/AdGuardHome ; rm -f ./AdGuardHome.tar.gz ./LICENSE.txt./README.md ./CHANGELOG.md ./AdGuardHome.sig
+		if [ ! -s "$AdGuardHome" ] && [ -d "/tmp/AdGuardHome" ] ; then
+			logger -t "AdGuardHome" "AdGuardHome下载失败,重新下载"
+                if [ ! -z "$tag" ] ; then
+			logger -t "AdGuardHome" "下载最新版本 $tag"
+			curl -L -k -S -o "/tmp/AdGuardHome.tar.gz" --connect-timeout 10 --retry 3 "https://fastly.jsdelivr.net/gh/AdguardTeam/AdGuardHome@releases/download/$tag/AdGuardHome_linux_mipsle_softfloat.tar.gz"
+			tar -xzvf /tmp/AdGuardHome.tar.gz -C /tmp
+		else
+			static_adguard="https://fastly.jsdelivr.net/gh/AdguardTeam/AdGuardHome@releases/download/v0.107.35/AdGuardHome_linux_mipsle_softfloat.tar.gz"
+			logger -t "AdGuardHome" "下载AdGuardHome_v0.107.35"
+			curl -L -k -S -o "/tmp/AdGuardHome.tar.gz" --connect-timeout 10 --retry 3 "$static_adguard"
+			tar -xzvf /tmp/AdGuardHome.tar.gz -C /tmp ; cd /tmp/AdGuardHome
+		fi
+		 cd /tmp/AdGuardHome ; rm -f ./LICENSE.txt./README.md ./CHANGELOG.md ./AdGuardHome.sig
+	        fi
+     fi
+              chmod 777 "$AdGuardHome"
+	      adgver=$($AdGuardHome --version | awk '{print $4}')
+       [ -z "$adgver" ] && logger -t "AdGuardHome" "程序不完整，重新下载" && rm -rf $AdGuardHome && adg_re
+                if [ -f "/tmp/AdGuardHome/AdGuardHome" ]; then
+                logger -t "AdGuardHome" "AdGuardHome_$adgver下载成功！"
+                fi
+  adgenable=$(nvram get adg_enable)
+  if [ "$adgb" = "1" ] ;then
+  getconfig
+  change_dns
+  set_iptable
+  logger -t "AdGuardHome" "运行AdGuardHome_$adgver"
+  eval "$AdGuardHome -c $adg_file -w /tmp/AdGuardHome -v" &
+  sleep 10
+  [ ! -z "`pidof AdGuardHome`" ] && logger -t "AdGuardHome" "启动成功"
+  [ -z "`pidof AdGuardHome`" ] && logger -t "AdGuardHome" "启动失败，20秒后尝试重新启动" && sleep 20 && adg_re
+  adgip=$(cat /etc/storage/adg.sh | grep "address:" | awk -F ':' '{print $3}' | tr -d ' ' )
+  [ -z "$adgip" ] && adgip=$(cat /etc/storage/adg.sh | grep "bind_port" | awk -F ':' '{print $2}' | tr -d ' ' )
+  [ -z "$adgip" ] && adgip=3030
+  lanip=`nvram get lan_ipaddr`
+  nvram set adg_ipaddr="http://${lanip}:${adgip}"
+logger -t "AdGuardHome" "守护进程启动" 
+sed -Ei '/AdGuardHome守护进程|^$/d' "$F"
+cat >> "$F" <<-OSC
+*/1 * * * * test -z \"\$(pidof AdGuardHome\" && [ \"\$(nvram get adg_enable)\" = "1" ] &&  adguardhome.sh start #AdGuardHome守护进程"
+OSC
+fi
 exit 0
-else
-logger -t "AdGuardHome" "AdGuardHome下载成功。"
-chmod 777 /tmp/AdGuardHome/AdGuardHome
-fi
 }
 
-start_adg(){
-    mkdir -p /tmp/AdGuardHome
-	mkdir -p /etc/storage/AdGuardHome
-	if [ ! -f "/tmp/AdGuardHome/AdGuardHome" ]; then
-#	cp /usr/bin/AdGuardHome /tmp/AdGuardHome/AdGuardHome
-	dl_adg
+adg_re(){
+        adg_enable=`nvram get adg_enable`
+	if [ -z "`pidof AdGuardHome`" ] && [ "$adg_enable" = "1" ];then
+	 sleep 20
+	start_adg
 	fi
-	getconfig
-	change_dns
-	set_iptable
-	logger -t "AdGuardHome" "启动 AdGuardHome"
-	eval "/tmp/AdGuardHome/AdGuardHome -c $adg_file -w /tmp/AdGuardHome -v" &
-
+ [ "$adgb" != "1" ] && stop_adg
+	exit 0
 }
-stop_adg(){
-rm -rf /tmp/AdGuardHome
-logger -t "AdGuardHome" "停止 AdGuardHome"
+
+stop_adg() {
+sed -Ei '/AdGuardHome守护进程|^$/d' "$F"
 killall -9 AdGuardHome
+killall AdGuardHome
 del_dns
 clear_iptable
+[ -z "`pidof AdGuardHome`" ] && logger -t "AdGuardHome" "关闭AdGuardHome"
 }
-
 
 case $1 in
 start)
-	start_adg
-	;;
+  start_adg &
+  ;;
 stop)
-	stop_adg
-	;;
+  stop_adg &
+  ;;
 *)
-	echo "check"
-	;;
+  start_adg &
+  ;;
 esac

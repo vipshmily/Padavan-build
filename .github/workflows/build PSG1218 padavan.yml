@@ -198,7 +198,7 @@ jobs:
         ##内网穿透服务##
         echo "CONFIG_FIRMWARE_INCLUDE_ALDRIVER=n" >> .config #ALDRIVER  ~3m
         echo "CONFIG_FIRMWARE_INCLUDE_MSD_LITE=y" >> .config #MSD_LITE
-        echo "CONFIG_FIRMWARE_INCLUDE_MTR=y" >> .config #MTR
+        echo "CONFIG_FIRMWARE_INCLUDE_MTR=n" >> .config #MTR
         #########################################################################################
         # 自定义添加其它功能请参考源码configs/templates/目录下的config文件。按照上面的格式添加即可
         # 格式如下：

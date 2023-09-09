@@ -20,7 +20,11 @@ jobs:
     - uses: actions/checkout@v3
     - uses: actions/setup-go@v3
       with:
-          go-version: '1.20'
+          go-version: '1.21'
+          check-latest: true
+    - uses: actions/setup-node@v3
+      with:
+          node-version: 18
           check-latest: true
           
     - name: 生成版本号
@@ -76,10 +80,16 @@ jobs:
     - name: Build Firmware
       env:
         TNAME: "${{ github.event.inputs.production }}"
-        MHZ: 1120               # CPU超频频率 必须为20的倍数
+        MHZ: 1200               # CPU超频频率 必须为20的倍数
       run: |
+        if [ -f public/adguardhome.Makefile ] ; then
+        mv -f public/adguardhome.Makefile ${{ env.DIR }}/trunk/user/adguardhome/Makefile
+        echo "Makefile file copy success"
+        else
+        exit 1
+        fi
         cp -f public/MI-R4A.config ${{ env.DIR }}/trunk/configs/templates
-        #cp -f public/adguardhome.sh ${{ env.DIR }}/trunk/user/adguardhome
+        cp -f public/adguardhome.sh ${{ env.DIR }}/trunk/user/adguardhome
         cwd=`pwd`
         CONFIG_TOOLCHAIN_DIR=${cwd//\//\\\/}\\/toolchain-mipsel
         cd ${{ env.DIR }}/trunk
@@ -162,7 +172,7 @@ jobs:
         ##DNS服务##
         echo "CONFIG_FIRMWARE_INCLUDE_SMARTDNS=y" >> .config #smartdns
         echo "CONFIG_FIRMWARE_INCLUDE_SMARTDNSBIN=n" >> .config #smartdns二进制文件
-        echo "CONFIG_FIRMWARE_INCLUDE_ADGUARDHOME=n" >> .config #adg DNS去AD
+        echo "CONFIG_FIRMWARE_INCLUDE_ADGUARDHOME=y" >> .config #adg DNS去AD
         ##DNS服务##
         
         ##文件管理##
