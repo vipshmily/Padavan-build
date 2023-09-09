@@ -67,11 +67,11 @@ jobs:
         sh dl_toolchain.sh
         mkdir -p /opt/images/
                 
-    - name: Set golang
-      run: |
-        cp -f bashScripts/go.sh $(pwd)
-        sudo chmod 777 ./go.sh
-        bash ./go.sh
+    #- name: Set golang
+      #run: |
+        #cp -f bashScripts/go.sh $(pwd)
+        #sudo chmod 777 ./go.sh
+        #bash ./go.sh
             
     - name: Build Firmware
       env:
