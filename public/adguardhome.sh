@@ -138,11 +138,18 @@ fi
 dl_adg() {
 logger -t "AdGuardHome" "下载AdGuardHome"
 #curl -k -s -o /tmp/AdGuardHome/AdGuardHome --connect-timeout 10 --retry 3 https://ghproxy.com/https://github.com/vipshmily/OutSide/blob/main/AdGuardHome
+curl -k -s -o /tmp/AdGuardHome/AdGuardHome --connect-timeout 10 --retry 3 https://fastly.jsdelivr.net/gh/vipshmily/OutSide/AdGuardHome
+if [ ! -f "/tmp/AdGuardHome/AdGuardHome" ]; then
+logger -t "AdGuardHome" "AdGuardHome下载失败，自动切换到备用下载。"
 curl -k -s -o /tmp/AdGuardHome/AdGuardHome --connect-timeout 10 --retry 3 https://raw.githubusercontent.com/vipshmily/OutSide/main/AdGuardHome
 if [ ! -f "/tmp/AdGuardHome/AdGuardHome" ]; then
-logger -t "AdGuardHome" "AdGuardHome下载失败，请检查是否能正常访问github!程序将退出。"
+logger -t "AdGuardHome" "AdGuardHome备用下载失败，请检查是否能正常访问github!"
 nvram set adg_enable=0
 exit 0
+else
+logger -t "AdGuardHome" "AdGuardHome备用下载成功。"
+chmod 777 /tmp/AdGuardHome/AdGuardHome
+fi
 else
 logger -t "AdGuardHome" "AdGuardHome下载成功。"
 chmod 777 /tmp/AdGuardHome/AdGuardHome
