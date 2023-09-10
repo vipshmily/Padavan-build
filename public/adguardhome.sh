@@ -143,7 +143,7 @@ if [ ! -f "/tmp/AdGuardHome/AdGuardHome" ]; then
 logger -t "AdGuardHome" "AdGuardHome下载失败，自动切换到备用下载。"
 curl -k -s -o /tmp/AdGuardHome/AdGuardHome --connect-timeout 10 --retry 3 https://raw.githubusercontent.com/vipshmily/OutSide/main/AdGuardHome
 if [ ! -f "/tmp/AdGuardHome/AdGuardHome" ]; then
-logger -t "AdGuardHome" "AdGuardHome备用下载失败，请检查是否能正常访问github!"
+logger -t "AdGuardHome" "AdGuardHome备用下载失败，请检查是否能正常访问github!程序将退出。"
 nvram set adg_enable=0
 exit 0
 else
