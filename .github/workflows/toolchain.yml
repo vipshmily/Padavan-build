@@ -44,6 +44,6 @@ jobs:
       - uses: svenstaro/upload-release-action@2.3.0
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: ${{ env.build_dir }}/mipsel-linux-uclibc-gcc8.3.tar.xz
+          file: ${{ env.build_dir }}/mipsel-linux-uclibc-gcc13.2.tar.xz
           tag: toolchain
           overwrite: true
