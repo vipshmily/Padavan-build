@@ -36,14 +36,14 @@ jobs:
           ./clean_toolchain
           ./build_toolchain
           cd $toolchain_dir
-          tar cJf ../mipsel-linux-uclibc.tar.xz.tar.xz *
+          tar cJf ../mipsel-linux-uclibc.tar.xz *
       - uses: actions/upload-artifact@v3
         with:
           name: toolchain
-          path: ${{ env.build_dir }}/mipsel-linux-uclibc-gcc7.4.tar.xz
+          path: ${{ env.build_dir }}/mipsel-linux-uclibc.tar.xz
       - uses: svenstaro/upload-release-action@2.3.0
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: ${{ env.build_dir }}/mipsel-linux-uclibc-gcc7.4.tar.xz
+          file: ${{ env.build_dir }}/mipsel-linux-uclibc.tar.xz
           tag: toolchain
           overwrite: true
