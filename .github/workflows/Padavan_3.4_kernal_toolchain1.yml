@@ -36,7 +36,7 @@ jobs:
           cd $build_dir
           ./clean_toolchain
           ./build_toolchain
-          cd $toolchain_dir
+          cd build_dir
           tar cJf ../toolchain_name *
       - uses: actions/upload-artifact@v3
         with:
