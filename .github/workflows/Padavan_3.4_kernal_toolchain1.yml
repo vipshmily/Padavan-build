@@ -1,4 +1,4 @@
-name: Padavan_3.4_kernal_mipsel-linux-uclibc-gcc10.tar.xz
+name: Padavan_3.4_kernal_toolchain1
 
 on: 
 #  release:
@@ -14,6 +14,7 @@ env:
   build_dir: /opt/rt-n56u/toolchain-mipsel
   toolchain_dir: /opt/rt-n56u/toolchain-mipsel/toolchain-3.4.x
   src_git: https://github.com/vipshmily/Padavan-KVR.git
+  toolchain_name: padavan_toolchain.tar.xz
 jobs:
   build:
     name: Build Padavan toolchain
@@ -36,14 +37,14 @@ jobs:
           ./clean_toolchain
           ./build_toolchain
           cd $toolchain_dir
-          tar cJf ../mipsel-linux-uclibc-gcc10.tar.xz *
+          tar cJf ../toolchain_name *
       - uses: actions/upload-artifact@v3
         with:
           name: toolchain
-          path: ${{ env.build_dir }}/mipsel-linux-uclibc-gcc10.tar.xz
+          path: ${{ env.build_dir }}/$toolchain_name
       - uses: svenstaro/upload-release-action@2.3.0
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: ${{ env.build_dir }}/mipsel-linux-uclibc-gcc10.tar.xz
+          file: ${{ env.build_dir }}/$toolchain_name
           tag: toolchain
           overwrite: true
