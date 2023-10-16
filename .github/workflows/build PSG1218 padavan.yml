@@ -18,9 +18,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
-    - uses: actions/setup-go@v3
+    - uses: actions/setup-go@v4
       with:
           go-version: '1.21'
+          check-latest: true
+    - uses: actions/setup-node@v3
+      with:
+          node-version: 18
           check-latest: true
       
     - name: 生成版本号
@@ -56,9 +60,6 @@ jobs:
       run: |
           sudo apt update
           sudo apt install libtool-bin gperf python3-docutils autopoint gettext ccache
-          #sudo apt-get -y install unzip libtool-bin curl cmake gperf gawk flex bison nano xxd fakeroot \
-          #cpio git python-docutils gettext automake autopoint texinfo build-essential help2man \
-          #pkg-config zlib1g-dev libgmp3-dev libmpc-dev libmpfr-dev libncurses5-dev libltdl-dev wget
         
     - name: Clone source code
       run: |
@@ -67,11 +68,11 @@ jobs:
         sh dl_toolchain.sh
         mkdir -p /opt/images/
                 
-    #- name: Set golang
-      #run: |
-        #cp -f bashScripts/go.sh $(pwd)
-        #sudo chmod 777 ./go.sh
-        #bash ./go.sh
+    - name: Set golang
+      run: |
+        cp -f bashScripts/go.sh $(pwd)
+        sudo chmod 777 ./go.sh
+        bash ./go.sh
             
     - name: Build Firmware
       env:
@@ -93,8 +94,6 @@ jobs:
         cp -f public/PSG1218.config ${{ env.DIR }}/trunk/configs/templates
         cp -f public/shadowsocks.sh ${{ env.DIR }}/trunk/user/shadowsocks/scripts
         #cp -f public/adguardhome.sh ${{ env.DIR }}/trunk/user/adguardhome 
-        cwd=`pwd`
-        CONFIG_TOOLCHAIN_DIR=${cwd//\//\\\/}\\/toolchain-mipsel
         cd ${{ env.DIR }}/trunk
         echo "CPU超频到$MHZ"mhz
         echo "修改CPU频率"
@@ -205,7 +204,6 @@ jobs:
         # sed -i '/自定义项/d' .config
         # echo "自定义项=y" >> .config
         #########################################################################################
-        sed -i "s/^CONFIG_TOOLCHAIN_DIR=.*$/CONFIG_TOOLCHAIN_DIR=${CONFIG_TOOLCHAIN_DIR}/g" .config
         sudo ./clear_tree_simple
         sudo ./build_firmware_modify $m 0
         sudo mv -f images/*.trx /opt/images/

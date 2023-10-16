@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
-    - uses: actions/setup-go@v3
+    - uses: actions/setup-go@v4
       with:
           go-version: '1.21'
           check-latest: true
@@ -60,15 +60,12 @@ jobs:
       run: |
           sudo apt update
           sudo apt install libtool-bin gperf python3-docutils autopoint gettext ccache
-          #sudo apt-get -y install unzip libtool-bin curl cmake gperf gawk flex bison nano xxd fakeroot \
-          #cpio git python-docutils gettext automake autopoint texinfo build-essential help2man \
-          #pkg-config zlib1g-dev libgmp3-dev libmpc-dev libmpfr-dev libncurses5-dev libltdl-dev wget
           
-    #- name: Set golang
-      #run: |
-        #cp -f bashScripts/go.sh $(pwd)
-        #sudo chmod 777 ./go.sh
-        #bash ./go.sh
+    - name: Set golang
+      run: |
+        cp -f bashScripts/go.sh $(pwd)
+        sudo chmod 777 ./go.sh
+        bash ./go.sh
         
     - name: Clone source code
       run: |
@@ -80,7 +77,7 @@ jobs:
     - name: Build Firmware
       env:
         TNAME: "${{ github.event.inputs.production }}"
-        MHZ: 1200               # CPU超频频率 必须为20的倍数
+        MHZ: 1180               # CPU超频频率 必须为20的倍数
       run: |
         if [ -f public/e2fsprogs.Makefile ] ; then
         mv -f public/e2fsprogs.Makefile ${{ env.DIR }}/trunk/user/e2fsprogs/Makefile
@@ -88,8 +85,6 @@ jobs:
         else
         exit 1
         fi
-        cwd=`pwd`
-        CONFIG_TOOLCHAIN_DIR=${cwd//\//\\\/}\\/toolchain-mipsel
         cd ${{ env.DIR }}/trunk
         echo "CPU超频到$MHZ"mhz
         echo "修改CPU频率"
@@ -188,8 +183,8 @@ jobs:
         echo "CONFIG_FIRMWARE_INCLUDE_ALIDDNS=n" >> .config #阿里DDNS
         echo "CONFIG_FIRMWARE_INCLUDE_FRPC=n" >> .config #内网穿透FRPC
         echo "CONFIG_FIRMWARE_INCLUDE_FRPS=n" >> .config #内网穿透FRPS
-        echo "CONFIG_FIRMWARE_INCLUDE_DDNSTO=y" >> .config #ddnsto  ~0.5M
-        echo "CONFIG_FIRMWARE_INCLUDE_WIREGUARD=y" >>.config #wireguard 10k
+        echo "CONFIG_FIRMWARE_INCLUDE_DDNSTO=n" >> .config #ddnsto  ~0.5M
+        echo "CONFIG_FIRMWARE_INCLUDE_WIREGUARD=n" >>.config #wireguard 10k
         ##内网穿透服务##
         echo "CONFIG_FIRMWARE_INCLUDE_ALDRIVER=y" >> .config #ALDRIVER  ~3m
         echo "CONFIG_FIRMWARE_INCLUDE_MSD_LITE=y" >> .config #MSD_LITE
@@ -200,7 +195,6 @@ jobs:
         # sed -i '/自定义项/d' .config
         # echo "自定义项=y" >> .config
         #########################################################################################
-        sed -i "s/^CONFIG_TOOLCHAIN_DIR=.*$/CONFIG_TOOLCHAIN_DIR=${CONFIG_TOOLCHAIN_DIR}/g" .config
         sudo ./clear_tree_simple
         sudo ./build_firmware_modify $m 0
         sudo mv -f images/*.trx /opt/images/
