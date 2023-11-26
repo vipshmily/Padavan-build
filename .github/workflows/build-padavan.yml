@@ -19,15 +19,17 @@ env:                      # 环境变量
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout
-      uses: actions/checkout@v3
+    - uses: actions/checkout@v3
     - uses: actions/setup-go@v3
       with:
-          go-version: '1.20'
+          go-version: '1.21'
           check-latest: true
-      
+    - uses: actions/setup-node@v3
+      with:
+          node-version: 18
+          check-latest: true
+          
     - name: 生成版本号
       run: |
         whoami
@@ -47,35 +49,27 @@ jobs:
         echo "NAME=${val1}_$VERSION" >> $GITHUB_ENV
         echo "TAG=v$VERSION" >> $GITHUB_ENV
         ip addr
+        
     - name: 创建目录
       run: |
         echo ${{ env.NAME }}
         echo ${{ env.TAG }}
         sudo mkdir -m 777 -p ${{ env.DIR }}
         sudo mkdir -m 777 -p /opt/images/
-        
         echo 开始编译时间 >> /opt/images/readme.txt
         TZ='Asia/Shanghai'  date  '+%Y-%m-%d %H:%M:%S' >> /opt/images/readme.txt
         
-    - name: Initialization environment
-      env:
-        DEBIAN_FRONTEND: noninteractive
+    - name: Prepare environment
       run: |
-        sudo apt update
-          sudo apt install libtool-bin gperf python3-docutils autopoint gettext
-        
+          sudo apt update
+          sudo apt install libtool-bin gperf python3-docutils autopoint gettext ccache
+              
     - name: Clone source code
       run: |
-        git clone --depth=1 https://github.com/vipshmily/Padavan-KVR.git ${{ env.DIR }}
+        git clone --depth=1 https://github.com/vipshmily/Padavan-3.4-KVR.git ${{ env.DIR }}
         cd ${{ env.DIR }}/toolchain-mipsel
         sh dl_toolchain.sh
         mkdir -p /opt/images/
-        
-    - name: Set golang
-      run: |
-        cp -f bashScripts/go.sh $(pwd)
-        sudo chmod 777 ./go.sh
-        bash ./go.sh
             
     - name: Build Firmware
       env:
