@@ -1,5 +1,5 @@
 # 注意：修改 default:    中的型号为你需要编译的型号，注意名称要与configs/templates/目录下的名字相同
-name: Build MI-R4A Padavan
+name: Build MI-R4A Padavan-3.4
 
 on:
   workflow_dispatch:
@@ -18,20 +18,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    - uses: actions/setup-go@v3
+    - uses: hendrikmuhs/ccache-action@v1.2
+    - uses: actions/setup-go@v5
       with:
-          go-version: '1.20'
+          go-version: '1.21'
           check-latest: true
+          cache: false
     - uses: actions/setup-node@v3
       with:
           node-version: 18
-          check-latest: true
-          
-    - name: 生成版本号
+          check-latest: true          
+    - name: Generate version number
       run: |
         whoami
         id
-        echo 接收到的输入参数:
+        echo input parameters received:
         echo "${{ github.event.inputs.production }}"
         echo "${{ github.event.inputs.release }}"
         echo 
@@ -43,31 +44,27 @@ jobs:
         echo "DIR=/opt/rt-n56u" >> $GITHUB_ENV
         val1="${{ github.event.inputs.production }}"
         #val2=$(echo $val1 | sed 's/ /-/')
-        echo "NAME=${val1}_$VERSION" >> $GITHUB_ENV
+        echo "NAME=${val1}_3.4_$VERSION" >> $GITHUB_ENV
         echo "TAG=v$VERSION" >> $GITHUB_ENV
-        ip addr
-        
-    - name: 创建目录
+        ip addr        
+    - name: Create a directory
       run: |
         echo ${{ env.NAME }}
         echo ${{ env.TAG }}
         sudo mkdir -m 777 -p ${{ env.DIR }}
         sudo mkdir -m 777 -p /opt/images/
         echo 开始编译时间 >> /opt/images/readme.txt
-        TZ='Asia/Shanghai'  date  '+%Y-%m-%d %H:%M:%S' >> /opt/images/readme.txt
-        
+        TZ='Asia/Shanghai'  date  '+%Y-%m-%d %H:%M:%S' >> /opt/images/readme.txt        
     - name: Prepare environment
       run: |
           sudo apt update
-          sudo apt install libtool-bin gperf python3-docutils autopoint gettext ccache
-              
+          sudo apt install libtool-bin gperf python3-docutils autopoint gettext ccache              
     - name: Clone source code
       run: |
         git clone --depth=1 https://github.com/vipshmily/Padavan-3.4-KVR.git ${{ env.DIR }}
         cd ${{ env.DIR }}/toolchain-mipsel
         sh dl_toolchain.sh
-        mkdir -p /opt/images/
-                        
+        mkdir -p /opt/images/                        
     - name: Build Firmware
       env:
         TNAME: "${{ github.event.inputs.production }}"
@@ -194,9 +191,8 @@ jobs:
         sudo ./clear_tree_simple
         sudo ./build_firmware_modify $m 0
         sudo mv -f images/*.trx /opt/images/
-        done
-        
-    - name: 收集信息
+        done        
+    - name: Collect information
       if: true
       run: |
         cd /opt/images
@@ -220,16 +216,14 @@ jobs:
         done
         #测试
         md5sum *.trx >> /opt/images/readme.txt || echo
-        ls -l      
-        
-    - name : 上传编译的固件Artifacts
-      uses: actions/upload-artifact@v3
+        ls -l              
+    - name : Upload images to Artifact
+      uses: actions/upload-artifact@v4
       if: true
       with:
         name: ${{ env.NAME }}
-        path: /opt/images
-        
-    - name: 发布到Release
+        path: /opt/images        
+    - name: Upload images to Releases
       if: ${{ github.event.inputs.release == 'yes' }}
       uses: softprops/action-gh-release@v1
       with:
