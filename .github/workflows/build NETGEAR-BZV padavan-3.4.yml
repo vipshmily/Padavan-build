@@ -44,7 +44,7 @@ jobs:
         echo "DIR=/opt/rt-n56u" >> $GITHUB_ENV
         val1="${{ github.event.inputs.production }}"
         #val2=$(echo $val1 | sed 's/ /-/')
-        echo "NAME=${val1}_$VERSION" >> $GITHUB_ENV
+        echo "NAME=${val1}_3.4_$VERSION" >> $GITHUB_ENV
         echo "TAG=v$VERSION" >> $GITHUB_ENV
         ip addr
     - name: Create a directory
@@ -52,8 +52,7 @@ jobs:
         echo ${{ env.NAME }}
         echo ${{ env.TAG }}
         sudo mkdir -m 777 -p ${{ env.DIR }}
-        sudo mkdir -m 777 -p /opt/images/
-        
+        sudo mkdir -m 777 -p /opt/images/        
         echo 开始编译时间 >> /opt/images/readme.txt
         TZ='Asia/Shanghai'  date  '+%Y-%m-%d %H:%M:%S' >> /opt/images/readme.txt        
     - name: Prepare environment
@@ -223,7 +222,7 @@ jobs:
         md5sum *.trx >> /opt/images/readme.txt || echo
         ls -l              
     - name : Upload images to Artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: true
       with:
         name: ${{ env.NAME }}

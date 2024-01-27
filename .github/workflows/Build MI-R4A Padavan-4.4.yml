@@ -31,11 +31,11 @@ jobs:
       with:
           node-version: 18
           check-latest: true          
-    - name: 生成版本号
+    - name: Generate version number
       run: |
         whoami
         id
-        echo 接收到的输入参数:
+        echo input parameters received:
         echo "${{ github.event.inputs.production }}"
         echo "${{ github.event.inputs.release }}"
         echo 
@@ -50,7 +50,7 @@ jobs:
         echo "NAME=${val1}_4.4_$VERSION" >> $GITHUB_ENV
         echo "TAG=v$VERSION" >> $GITHUB_ENV
         ip addr        
-    - name: 创建目录
+    - name: Create a directory
       run: |
         echo ${{ env.NAME }}
         echo ${{ env.TAG }}
@@ -198,7 +198,7 @@ jobs:
         cd ${{ env.DIR }}/trunk
         sudo mv -f images/*.trx /opt/images/
         done
-    - name: 收集信息
+    - name: Collect information
       if: true
       run: |
         cd /opt/images
@@ -223,13 +223,13 @@ jobs:
         #测试
         md5sum *.trx >> /opt/images/readme.txt || echo
         ls -l              
-    - name : 上传编译的固件Artifacts
+    - name : Upload images to Artifact
       uses: actions/upload-artifact@v4
       if: true
       with:
         name: ${{ env.NAME }}
         path: /opt/images        
-    - name: 发布到Release
+    - name: Upload images to Releases
       if: ${{ github.event.inputs.release == 'yes' }}
       uses: softprops/action-gh-release@v1
       with:

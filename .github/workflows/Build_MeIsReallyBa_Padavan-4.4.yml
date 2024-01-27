@@ -218,7 +218,7 @@ jobs:
         md5sum *.trx >> /opt/images/readme.txt || echo
         ls -l              
     - name : Upload images to Artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: true
       with:
         name: ${{ env.NAME }}

@@ -1,12 +1,12 @@
 # 注意：修改 default:    中的型号为你需要编译的型号，注意名称要与configs/templates/目录下的名字相同
-name: Build PSG1218 Padavan
+name: Build MI-4C Padavan-3.4
 
 on:
   workflow_dispatch:
     inputs:
       production:
         description: 设置编译的固件型号,空格分隔.
-        default: "PSG1218"
+        default: "MI-4C"
         required: false
       release:
         description: "是否需要发布到Release? (不发布也可以到Artifacts下载)"
@@ -18,20 +18,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    - uses: actions/setup-go@v3
+    - uses: hendrikmuhs/ccache-action@v1.2
+    - uses: actions/setup-go@v5
       with:
           go-version: '1.21'
           check-latest: true
+          cache: false
     - uses: actions/setup-node@v3
       with:
           node-version: 18
-          check-latest: true
-      
-    - name: 生成版本号
+          check-latest: true          
+    - name: Generate version number
       run: |
         whoami
         id
-        echo 接收到的输入参数:
+        echo input parameters received:
         echo "${{ github.event.inputs.production }}"
         echo "${{ github.event.inputs.release }}"
         echo 
@@ -43,58 +44,39 @@ jobs:
         echo "DIR=/opt/rt-n56u" >> $GITHUB_ENV
         val1="${{ github.event.inputs.production }}"
         #val2=$(echo $val1 | sed 's/ /-/')
-        echo "NAME=${val1}_$VERSION" >> $GITHUB_ENV
+        echo "NAME=${val1}_3.4_$VERSION" >> $GITHUB_ENV
         echo "TAG=v$VERSION" >> $GITHUB_ENV
-        ip addr
-    - name: 创建目录
+        ip addr        
+    - name: Create a directory
       run: |
         echo ${{ env.NAME }}
         echo ${{ env.TAG }}
         sudo mkdir -m 777 -p ${{ env.DIR }}
         sudo mkdir -m 777 -p /opt/images/
-        
         echo 开始编译时间 >> /opt/images/readme.txt
-        TZ='Asia/Shanghai'  date  '+%Y-%m-%d %H:%M:%S' >> /opt/images/readme.txt
-        
+        TZ='Asia/Shanghai'  date  '+%Y-%m-%d %H:%M:%S' >> /opt/images/readme.txt        
     - name: Prepare environment
       run: |
-          sudo apt update
-          sudo apt install libtool-bin gperf python3-docutils autopoint gettext ccache
-        
+        sudo apt update
+        sudo apt install libtool-bin gperf python3-docutils autopoint gettext ccache              
     - name: Clone source code
       run: |
         git clone --depth=1 https://github.com/vipshmily/Padavan-3.4-KVR.git ${{ env.DIR }}
         cd ${{ env.DIR }}/toolchain-mipsel
         sh dl_toolchain.sh
-        mkdir -p /opt/images/
-            
+        mkdir -p /opt/images/                        
     - name: Build Firmware
       env:
         TNAME: "${{ github.event.inputs.production }}"
-        MHZ: 600               # CPU超频频率 必须为20的倍数
       run: |
-        #if [ -f public/Xray.Makefile ] ; then
-        #mv -f public/Xray.Makefile ${{ env.DIR }}/trunk/user/xray/Makefile
-        #echo "Makefile file copy success"
-        #else
-        #exit 1
-        #fi
-        #if [ -f public/V2ray.Makefile ] ; then
-        #mv -f public/V2ray.Makefile ${{ env.DIR }}/trunk/user/v2ray/Makefile
-        #echo "Makefile file copy success"
-        #else
-        #exit 2 
-        #fi
-        cp -f public/PSG1218.config ${{ env.DIR }}/trunk/configs/templates
-        cp -f public/shadowsocks.sh ${{ env.DIR }}/trunk/user/shadowsocks/scripts
-        #cp -f public/adguardhome.sh ${{ env.DIR }}/trunk/user/adguardhome 
+        if [ -f public/adguardhome.Makefile ] ; then
+        mv -f public/adguardhome.Makefile ${{ env.DIR }}/trunk/user/adguardhome/Makefile
+        echo "Makefile file copy success"
+        else
+        exit 1
+        fi
+        cp -f public/adguardhome.sh ${{ env.DIR }}/trunk/user/adguardhome
         cd ${{ env.DIR }}/trunk
-        echo "CPU超频到$MHZ"mhz
-        echo "修改CPU频率"
-        clock=`echo "obase=16 ; ibase=10 ; (((($MHZ/20)-1)*16+2))" | bc`
-        echo "16进制$clock"
-        sed -i "554,555s:0xff:0x7ff:g" ${{ env.DIR }}/trunk/linux-3.4.x/arch/mips/rt2880/init.c
-        sed -i "554,556s:0xc2:0x$clock:g" ${{ env.DIR }}/trunk/linux-3.4.x/arch/mips/rt2880/init.c
         for m in $TNAME;
         do
         if [ ! -f configs/templates/$m.config ] ; then
@@ -122,7 +104,6 @@ jobs:
         sed -i '/CONFIG_FIRMWARE_INCLUDE_SMARTDNS/d' .config #删除配置项SMARTDNS
         sed -i '/CONFIG_FIRMWARE_INCLUDE_SRELAY/d' .config #删除配置项SRELAY
         sed -i '/CONFIG_FIRMWARE_INCLUDE_KUMASOCKS/d' .config #删除配置项KUMASOCKS
-        sed -i '/CONFIG_FIRMWARE_CPU_600MHZ/d' .config #删除配置项超频600MHz
         sed -i '/CONFIG_FIRMWARE_INCLUDE_SSOBFS/d' .config
         sed -i '/CONFIG_FIRMWARE_INCLUDE_V2RAY/d' .config
         sed -i '/CONFIG_FIRMWARE_INCLUDE_XRAY/d' .config
@@ -150,13 +131,12 @@ jobs:
         echo "CONFIG_FIRMWARE_INCLUDE_DNSFORWARDER=n" >> .config #DNSFORWARDER
         echo "CONFIG_FIRMWARE_INCLUDE_TUNSAFE=n" >> .config #TUNSAFE
         echo "CONFIG_FIRMWARE_INCLUDE_SRELAY=n" >> .config #可以不集成
-        echo "CONFIG_FIRMWARE_CPU_600MHZ=y" >> .config #开启超频，仅MT7621可用
         ##科学上网## 
-        echo "CONFIG_FIRMWARE_INCLUDE_SHADOWSOCKS=n" >> .config #科学上网插件，选择n后全部有关插件都不集成
+        echo "CONFIG_FIRMWARE_INCLUDE_SHADOWSOCKS=y" >> .config #科学上网插件，选择n后全部有关插件都不集成
         echo "CONFIG_FIRMWARE_INCLUDE_SSOBFS=n" >> .config # simple-obfs混淆插件
         echo "CONFIG_FIRMWARE_INCLUDE_V2RAY=n" >> .config #集成v2ray执行文件（3.6M左右)
-        echo "CONFIG_FIRMWARE_INCLUDE_XRAY=n" >> .config #集成xray执行文件（3.6M左右)
-        echo "CONFIG_FIRMWARE_INCLUDE_TROJAN=n" >> .config #集成trojan执行文件(1.1M左右)
+        echo "CONFIG_FIRMWARE_INCLUDE_XRAY=y" >> .config #集成xray执行文件（3.6M左右)
+        echo "CONFIG_FIRMWARE_INCLUDE_TROJAN=y" >> .config #集成trojan执行文件(1.1M左右)
         echo "CONFIG_FIRMWARE_INCLUDE_KUMASOCKS=n" >> .config #socks5服务端
         ##科学上网##
         
@@ -168,7 +148,7 @@ jobs:
         ##DNS服务##
         echo "CONFIG_FIRMWARE_INCLUDE_SMARTDNS=y" >> .config #smartdns
         echo "CONFIG_FIRMWARE_INCLUDE_SMARTDNSBIN=n" >> .config #smartdns二进制文件
-        echo "CONFIG_FIRMWARE_INCLUDE_ADGUARDHOME=n" >> .config #adg DNS去AD
+        echo "CONFIG_FIRMWARE_INCLUDE_ADGUARDHOME=y" >> .config #adg DNS去AD
         ##DNS服务##
         
         ##文件管理##
@@ -201,23 +181,20 @@ jobs:
         sudo ./clear_tree_simple
         sudo ./build_firmware_modify $m 0
         sudo mv -f images/*.trx /opt/images/
-        done
-    - name: 收集信息
+        done        
+    - name: Collect information
       if: true
       run: |
         cd /opt/images
         #记录一个版本号
         echo 完成编译时间 >> /opt/images/readme.txt
         TZ='Asia/Shanghai'  date  '+%Y-%m-%d %H:%M:%S' >> /opt/images/readme.txt
-        
         echo  >> /opt/images/readme.txt
         echo 编译版本 >> /opt/images/readme.txt
-        
         pushd ${{ env.DIR }}
         git ls-remote --get-url origin >> /opt/images/readme.txt
         git log -1 >> /opt/images/readme.txt
         popd
-        
         echo  >> /opt/images/readme.txt
         echo md5校验值 >> /opt/images/readme.txt
         cd /opt/images
@@ -229,16 +206,14 @@ jobs:
         done
         #测试
         md5sum *.trx >> /opt/images/readme.txt || echo
-        ls -l      
-        
-    - name : 上传编译的固件Artifacts
-      uses: actions/upload-artifact@v3
+        ls -l              
+    - name : Upload images to Artifact
+      uses: actions/upload-artifact@v4
       if: true
       with:
         name: ${{ env.NAME }}
-        path: /opt/images
-        
-    - name: 发布到Release
+        path: /opt/images        
+    - name: Upload images to Releases
       if: ${{ github.event.inputs.release == 'yes' }}
       uses: softprops/action-gh-release@v1
       with:
