@@ -19,6 +19,8 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - uses: hendrikmuhs/ccache-action@v1.2
+      with:
+          key: "${{ github.event.inputs.production }}"
     - uses: actions/setup-go@v5
       with:
           go-version: '1.21'
@@ -62,8 +64,8 @@ jobs:
     - name: Clone source code
       run: |
         git clone --depth=1 https://github.com/vipshmily/Padavan-3.4-KVR.git ${{ env.DIR }}
-        cd ${{ env.DIR }}/toolchain-mipsel
-        sh dl_toolchain.sh
+        cd ${{ env.DIR }}
+        sed -i '/cp -f/d' Makefile
         mkdir -p /opt/images/                        
     - name: Build Firmware
       env:
@@ -75,12 +77,6 @@ jobs:
         echo "Makefile file copy success"
         else
         exit 1
-        fi
-        if [ -f public/socat.Makefile ] ; then
-        mv -f public/socat.Makefile ${{ env.DIR }}/trunk/user/socat/Makefile
-        echo "Makefile file copy success"
-        else
-        exit 2
         fi
         cd ${{ env.DIR }}/trunk
         echo "CPU超频到$MHZ"mhz
@@ -147,7 +143,7 @@ jobs:
         echo "CONFIG_FIRMWARE_CPU_900MHZ=y" >> .config #开启超频，仅MT7621可用
         ##科学上网## 
         echo "CONFIG_FIRMWARE_INCLUDE_SHADOWSOCKS=y" >> .config #科学上网插件，选择n后全部有关插件都不集成
-        echo "CONFIG_FIRMWARE_INCLUDE_SSOBFS=y" >> .config # simple-obfs混淆插件
+        echo "CONFIG_FIRMWARE_INCLUDE_SSOBFS=n" >> .config # simple-obfs混淆插件
         echo "CONFIG_FIRMWARE_INCLUDE_V2RAY=n" >> .config #集成v2ray执行文件（3.6M左右)
         echo "CONFIG_FIRMWARE_INCLUDE_XRAY=y" >> .config #集成xray执行文件（3.6M左右)
         echo "CONFIG_FIRMWARE_INCLUDE_TROJAN=y" >> .config #集成trojan执行文件(1.1M左右)
@@ -192,8 +188,10 @@ jobs:
         # sed -i '/自定义项/d' .config
         # echo "自定义项=y" >> .config
         #########################################################################################
-        sudo ./clear_tree_simple
-        sudo ./build_firmware_modify $m 0
+        cd ${{ env.DIR }}
+        sudo make $m
+        cd ${{ env.DIR }}/trunk
+        sudo ./build_firmware_ci $m 0
         sudo mv -f images/*.trx /opt/images/
         done
     - name: Collect information
