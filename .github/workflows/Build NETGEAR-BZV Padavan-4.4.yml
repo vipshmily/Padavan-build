@@ -13,8 +13,8 @@ on:
         default: 'yes'
         required: false
 env:
+  TNAME: "${{ github.event.inputs.production }}"
   REPOSITORY_URL: https://github.com/vipshmily/padavan-4.4.git
-  #TOOLCHAIN_URL: https://github.com/vipshmily/padavan-4.4/releases/download/toolchain/mipsel-linux-uclibc.tar.xz
   
 jobs:
   build:
@@ -69,34 +69,14 @@ jobs:
         git clone --depth=1 $REPOSITORY_URL ${{ env.DIR }}
         cd ${{ env.DIR }}
         sed -i '/cp -f/d' Makefile
-        mkdir -p /opt/images/
-    #- name: Extract toolchain
-      #run: |
-        #cd ${{ env.DIR }}/toolchain-mipsel
-        #mkdir -p toolchain-4.4.x
-        #wget $TOOLCHAIN_URL
-        #tar -xvf mipsel-linux-uclibc.tar.xz -C toolchain-4.4.x                        
+        mkdir -p /opt/images/                        
     - name: Build firmware
-      env:
-        TNAME: "${{ github.event.inputs.production }}"
       run: |
         if [ -f public/e2fsprogs.Makefile ] ; then
         mv -f public/e2fsprogs.Makefile ${{ env.DIR }}/trunk/user/e2fsprogs/Makefile
         echo "Makefile file copy success"
         else
         exit 1
-        fi
-        if [ -f public/socat.Makefile ] ; then
-        mv -f public/socat.Makefile ${{ env.DIR }}/trunk/user/socat/Makefile
-        echo "Makefile file copy success"
-        else
-        exit 2
-        fi
-        if [ -f public/openssh.Makefile ] ; then
-        mv -f public/openssh.Makefile ${{ env.DIR }}/trunk/user/openssh/Makefile
-        echo "Makefile file copy success"
-        else
-        exit 3
         fi
         cd ${{ env.DIR }}/trunk
         for m in $TNAME;
@@ -209,7 +189,6 @@ jobs:
         sudo make $m
         cd ${{ env.DIR }}/trunk
         sudo mv -f images/*.trx /opt/images/
-        sudo ./configure $m 0
         done
     - name: Collect information
       if: true
