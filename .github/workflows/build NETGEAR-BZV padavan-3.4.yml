@@ -12,6 +12,10 @@ on:
         description: "是否需要发布到Release? (不发布也可以到Artifacts下载)"
         default: 'yes'
         required: false
+env:
+   MHZ: 1160               # CPU超频频率 必须为20的倍数
+   TNAME: "${{ github.event.inputs.production }}"
+   REPOSITORY_URL: https://github.com/vipshmily/Padavan-3.4-KVR.git
         
 jobs:
   build:
@@ -19,6 +23,8 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - uses: hendrikmuhs/ccache-action@v1.2
+      with:
+          key: "${{ github.event.inputs.production }}"
     - uses: actions/setup-go@v5
       with:
           go-version: '1.21'
@@ -61,26 +67,17 @@ jobs:
           sudo apt install libtool-bin gperf python3-docutils autopoint gettext ccache        
     - name: Clone source code
       run: |
-        git clone --depth=1 https://github.com/vipshmily/Padavan-3.4-KVR.git ${{ env.DIR }}
+        git clone --depth=1 $REPOSITORY_URL ${{ env.DIR }}
         cd ${{ env.DIR }}/toolchain-mipsel
         sh dl_toolchain.sh
         mkdir -p /opt/images/                        
     - name: Build Firmware
-      env:
-        TNAME: "${{ github.event.inputs.production }}"
-        MHZ: 1160               # CPU超频频率 必须为20的倍数
       run: |
         if [ -f public/e2fsprogs.Makefile ] ; then
         mv -f public/e2fsprogs.Makefile ${{ env.DIR }}/trunk/user/e2fsprogs/Makefile
         echo "Makefile file copy success"
         else
         exit 1
-        fi
-        if [ -f public/socat.Makefile ] ; then
-        mv -f public/socat.Makefile ${{ env.DIR }}/trunk/user/socat/Makefile
-        echo "Makefile file copy success"
-        else
-        exit 2
         fi
         cd ${{ env.DIR }}/trunk
         echo "CPU超频到$MHZ"mhz

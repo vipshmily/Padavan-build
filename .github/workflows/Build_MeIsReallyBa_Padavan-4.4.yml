@@ -12,6 +12,9 @@ on:
         description: "是否需要发布到Release? (不发布也可以到Artifacts下载)"
         default: 'yes'
         required: false
+env:
+   TNAME: "${{ github.event.inputs.production }}"
+   REPOSITORY_URL: https://github.com/MeIsReallyBa/padavan-4.4.git
         
 jobs:
   build:
@@ -19,6 +22,8 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - uses: hendrikmuhs/ccache-action@v1.2
+      with:
+          key: "${{ github.event.inputs.production }}"
     - uses: actions/setup-go@v5
       with:
           go-version: '1.21'
@@ -59,17 +64,13 @@ jobs:
       run: |
         sudo apt update
         sudo apt install libtool-bin gperf python3-docutils autopoint gettext ccache              
-    - name: Clone source code
-      env:
-        REPOSITORY_URL: https://github.com/MeIsReallyBa/padavan-4.4.git 
+    - name: Clone source code 
       run: |
         git clone --depth=1 $REPOSITORY_URL ${{ env.DIR }}
         cd ${{ env.DIR }}/toolchain-mipsel
         sh dl_toolchain.sh
         mkdir -p /opt/images/                        
     - name: Build Firmware
-      env:
-        TNAME: "${{ github.event.inputs.production }}"
       run: |
         if [ -f public/adguardhome.Makefile ] ; then
         mv -f public/adguardhome.Makefile ${{ env.DIR }}/trunk/user/adguardhome/Makefile
