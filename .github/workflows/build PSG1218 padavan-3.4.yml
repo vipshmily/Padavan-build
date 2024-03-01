@@ -201,7 +201,7 @@ jobs:
         cd ${{ env.DIR }}
         sudo make $m
         cd ${{ env.DIR }}/trunk
-        sudo ./build_firmware_ci $m 0
+        sudo ./configure $m 0
         sudo mv -f images/*.trx /opt/images/
         done
     - name: Collect information
