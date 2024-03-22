@@ -184,7 +184,7 @@ jobs:
         echo "CONFIG_FIRMWARE_INCLUDE_WIREGUARD=n" >>.config #wireguard 10k
         ##内网穿透服务##
         echo "CONFIG_FIRMWARE_INCLUDE_ALDRIVER=n" >> .config #ALDRIVER  ~3m
-        echo "CONFIG_FIRMWARE_INCLUDE_SQM=y" >> .config #SQM
+        echo "CONFIG_FIRMWARE_INCLUDE_SQM=n" >> .config #SQM
         echo "CONFIG_FIRMWARE_INCLUDE_MSD_LITE=y" >> .config #MSD_LITE
         echo "CONFIG_FIRMWARE_INCLUDE_MTR=n" >> .config #MTR
         #########################################################################################

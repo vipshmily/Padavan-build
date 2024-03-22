@@ -128,6 +128,7 @@ jobs:
         sed -i '/CONFIG_FIRMWARE_INCLUDE_DDNSTO/d' .config
         sed -i '/CONFIG_FIRMWARE_INCLUDE_WIREGUARD/d' .config
         sed -i '/CONFIG_FIRMWARE_INCLUDE_ALDRIVER/d' .config
+        sed -i '/CONFIG_FIRMWARE_INCLUDE_SQM/d' .config
         sed -i '/CONFIG_FIRMWARE_INCLUDE_MSD_LITE/d' .config
         sed -i '/CONFIG_FIRMWARE_INCLUDE_MTR/d' .config
         sed -i '/CONFIG_FIRMWARE_INCLUDE_OC/d' .config
@@ -181,6 +182,7 @@ jobs:
         echo "CONFIG_FIRMWARE_INCLUDE_WIREGUARD=n" >>.config #wireguard 10k
         ##内网穿透服务##
         echo "CONFIG_FIRMWARE_INCLUDE_ALDRIVER=y" >> .config #ALDRIVER  ~3m
+        echo "CONFIG_FIRMWARE_INCLUDE_SQM=y" >> .config #SQM
         echo "CONFIG_FIRMWARE_INCLUDE_MSD_LITE=y" >> .config #MSD_LITE
         echo "CONFIG_FIRMWARE_INCLUDE_MTR=n" >> .config #MTR
         #CPU超频
